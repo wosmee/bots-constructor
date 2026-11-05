@@ -1607,10 +1607,32 @@ app.get('/api/bots', async (c) => {
   // owner_id = 'admin', которого не было ни у одного аккаунта, поэтому его не
   // находила и страница «Пользователи». Флаг adminKey оставлен: по нему UI
   // знает, что это платформенная сессия, и не обещает чужих ботов.
-  if (id.admin && !id.user) return json({ bots: await listBots(c.env.DB, ADMIN_OWNER_ID), adminKey: true });
-  const bots = await listBots(c.env.DB, id.user!.id);
-  return json({ bots });
+  // Пагинация опциональна (?limit=&offset=): без параметров — весь список,
+  // как раньше. limit зажат сверху (LIST_BOTS_MAX_LIMIT), чтобы параметром
+  // нельзя было вытащить базу целиком одним запросом; total уходит рядом,
+  // чтобы UI не делал отдельный COUNT.
+  const page = parseBotsPage(c.req.query('limit'), c.req.query('offset'));
+  if (id.admin && !id.user) {
+    const r = await listBots(c.env.DB, ADMIN_OWNER_ID, page);
+    return json({ bots: r.bots, total: r.total, adminKey: true });
+  }
+  const r = await listBots(c.env.DB, id.user!.id, page);
+  return json({ bots: r.bots, total: r.total });
 });
+
+// limit/offset строки запроса -> { limit, offset } | undefined. Некорректные
+// значения игнорируются (пагинации нет), валидные — зажимаются в границы.
+function parseBotsPage(limitRaw: string | undefined, offsetRaw: string | undefined): { limit: number; offset: number } | undefined {
+  if (limitRaw === undefined && offsetRaw === undefined) return undefined;
+  const limit = Number(limitRaw);
+  const offset = Number(offsetRaw);
+  if (!Number.isInteger(limit) || limit <= 0) return undefined;
+  return {
+    limit: Math.min(limit, LIST_BOTS_MAX_LIMIT),
+    offset: Number.isInteger(offset) && offset > 0 ? offset : 0,
+  };
+}
+const LIST_BOTS_MAX_LIMIT = 200;
 
 // ---------------- страница «Пользователи» (staff-only, read-only) ----------------
 //
@@ -5784,7 +5806,8 @@ app.post('/vk/:botId', async (c) => {
         });
         // Профиль: у VK это from_id + имя (придёт в объекте с fields при
         // включённых расширенных событиях; без имени пишем только id).
-        await logEvent(c.env.DB, botId, userId, `step.${final.currentBlock ?? 'end'}`);
+        // step-лог — сэмплированный (раз в минуту на бота+юзера).
+        await logStepSampled(c.env.KV, c.env.DB, botId, userId, `step.${final.currentBlock ?? 'end'}`);
       } catch {
         /* сессия не записалась — следующий заход пойдёт заново */
       }
@@ -6100,7 +6123,9 @@ app.post('/:botId', async (c) => {
           .run()
           .catch(() => {});
       }
-      await logEvent(c.env.DB, botId, userId, `step.${final.currentBlock ?? 'end'}`);
+      // step-лог — сэмплированный: раз в минуту на бота+юзера (иначе logs
+      // растут линейно трафику и съедают квоту D1 между чистками).
+      await logStepSampled(c.env.KV, c.env.DB, botId, userId, `step.${final.currentBlock ?? 'end'}`);
     } catch {
       /* сессия не записалась — следующий апдейт пойдёт по сценарию заново */
     }
@@ -6322,6 +6347,30 @@ function makeDeferred(execCtx: { waitUntil?: (p: Promise<unknown>) => void } | u
       await Promise.allSettled(pending);
     },
   };
+}
+
+// Сэмплирование step-логов: раньше step.<block> писался в logs на КАЖДЫЙ
+// входящий апдейт (персист сессии) — таблица росла линейно трафику бота и
+// между тиками чистки съедала квоту D1. Теперь запись не чаще раза в
+// STEP_LOG_MIN_INTERVAL_MS на бота+юзера: KV-флаг с TTL гасит повторы,
+// ошибки KV молча отключают сэмплирование (логи пишутся как раньше —
+// потерять логи хуже, чем сэкономить запись). Прочие события
+// (payments.*, publish.*, bot.*) — не сэмплируются: их мало и они значимы.
+const STEP_LOG_MIN_INTERVAL_MS = 60_000;
+async function logStepSampled(kv: KVNamespace | undefined, db: D1Database, botId: string, userId: number, event: string): Promise<void> {
+  if (!kv) {
+    await logEvent(db, botId, userId, event);
+    return;
+  }
+  const key = `steplog:${botId}:${userId}`;
+  try {
+    const prev = await kv.get(key);
+    if (prev !== null) return; // уже писали в окне — пропускаем
+    await kv.put(key, '1', { expirationTtl: Math.ceil(STEP_LOG_MIN_INTERVAL_MS / 1000) });
+  } catch {
+    /* кэш недоступен — пишем без сэмплирования */
+  }
+  await logEvent(db, botId, userId, event);
 }
 
 async function dispatchOuts(

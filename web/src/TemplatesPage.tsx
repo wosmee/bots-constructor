@@ -49,6 +49,8 @@ export function TemplatesPage({
       .listBots()
       .then((r: any) => setBots((r?.bots ?? []).map((b: any) => ({ id: b.id, name: b.name }))))
       .catch(() => setBots([]));
+    // Шаблоны фильтруются по своим ботам автора (клонировать может только
+    // владелец): 50 последних хватает, полный список здесь не нужен.
   }, []);
 
   const load = useCallback(async () => {

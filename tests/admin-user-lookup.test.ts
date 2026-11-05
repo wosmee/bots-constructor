@@ -236,6 +236,41 @@ describe('GET /api/bots — скоупинг дашборда', () => {
     const res = await get(env, '/api/bots');
     expect(res.status).toBe(401);
   });
+
+  // Пагинация (опциональная): без параметров — прежнее поведение (весь список,
+  // total равен длине); с limit/offset — COUNT + LIMIT/OFFSET в SQL, total из
+  // COUNT. Фейковый D1 в makeEnv не знает LIMIT/OFFSET для этого SELECT —
+  // проверяем сам SQL и форму ответа, не порядок строк.
+  it('?limit/offset включает пагинацию: COUNT + LIMIT/OFFSET, total из COUNT', async () => {
+    const { env, recorded } = makeEnv();
+    const res = await get(env, '/api/bots?limit=10&offset=5', asUser);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { bots: any[]; total: number };
+    expect(typeof body.total).toBe('number');
+    // COUNT-запрос ушёл (в first), фильтр по владельцу — тот же bind.
+    const countQ = recorded.find((r) => r.sql.includes('SELECT COUNT(*) AS n FROM bots b'));
+    expect(countQ).toBeTruthy();
+    expect(countQ!.args).toEqual(['u1']);
+    // Основной запрос — с LIMIT/OFFSET.
+    const listQ = recorded.find((r) => r.sql.includes('FROM bots b LEFT JOIN accounts a') && /LIMIT \? OFFSET \?/.test(r.sql));
+    expect(listQ).toBeTruthy();
+    expect(listQ!.args.slice(-2)).toEqual([10, 5]);
+  });
+
+  it('без параметров пагинации SQL прежний: без LIMIT и без COUNT', async () => {
+    const { env, recorded } = makeEnv();
+    await get(env, '/api/bots', asUser);
+    expect(recorded.some((r) => r.sql.includes('SELECT COUNT(*) AS n FROM bots b'))).toBe(false);
+    expect(recorded.some((r) => /LIMIT \? OFFSET \?/.test(r.sql))).toBe(false);
+  });
+
+  it('битые limit/offset игнорируются — работает как без пагинации', async () => {
+    const { env } = makeEnv();
+    const res = await get(env, '/api/bots?limit=abc', asUser);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { bots: any[]; total: number };
+    expect(body.total).toBe(body.bots.length);
+  });
 });
 
 describe('GET /api/admin/users/:login', () => {

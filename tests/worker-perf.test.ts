@@ -72,7 +72,7 @@ function makeEnv(scenario: Scenario) {
   const kv = {
     async get(key: string) {
       if (key === BOT_ID) return SECRET;
-      if (key.startsWith('sc:')) return store.get(key) ?? null;
+      if (key.startsWith('sc:') || key.startsWith('steplog:')) return store.get(key) ?? null;
       return null;
     },
     async put(key: string, value: string) { store.set(key, value); },
@@ -160,6 +160,32 @@ describe('webhook: не-критичные логи уходят в waitUntil', 
     // ctx без waitUntil — как в части тестовых путей.
     await sendCallback(env, {});
     expect(dbOrder.some((e) => e.startsWith('log:step.'))).toBe(true);
+  });
+});
+
+describe('step-логи сэмплируются (не чаще раза в минуту на бота+юзера)', () => {
+  it('второй апдейт в окне не пишет второй step-лог', async () => {
+    const env = makeEnv(messageScenario());
+    // ctx без waitUntil — как в соседнем тесте: к концу запроса всё записано.
+    await sendCallback(env, {});
+    await sendCallback(env, {});
+    // Первый апдейт записал step, второй увидел KV-флаг и пропустил запись.
+    expect(dbOrder.filter((e) => e.startsWith('log:step.'))).toHaveLength(1);
+    // KV-флаг реально поставлен с TTL.
+    // (kv.get вызывался для steplog: — проверяем косвенно: фильтр сработал.)
+  });
+
+  it('без KV step-лог пишется на каждый апдейт (деградация к прежнему поведению)', async () => {
+    const env = makeEnv(messageScenario());
+    // KV остаётся (webhook-auth идёт через него), но steplog-ключи не
+    // сохраняются — get всегда null, сэмплирование не срабатывает.
+    (env as any).KV = {
+      async get(key: string) { return key === BOT_ID ? SECRET : null; },
+      async put() {},
+    };
+    await sendCallback(env, {});
+    await sendCallback(env, {});
+    expect(dbOrder.filter((e) => e.startsWith('log:step.'))).toHaveLength(2);
   });
 });
 

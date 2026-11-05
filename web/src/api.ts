@@ -9,6 +9,9 @@ import { createApiError } from './journey';
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? '';
 
+// Размер страницы каталога ботов (сервер зажимает до 200).
+const BOTS_PAGE_SIZE = 50;
+
 const ADMIN_KEY_STORAGE = 'botsAdminKey';
 const TOKEN_STORAGE = 'botsSessionToken';
 
@@ -355,7 +358,8 @@ export const api = {
   logoutAll: () => req('/api/auth/logout-all', { method: 'POST' }) as Promise<{ ok: true; sessionsClosed: number }>,
 
   // ---- bots ----
-  listBots: () => req('/api/bots') as Promise<{ bots: any[]; adminKey?: boolean }>,
+  // Пагинация: первые PAGE_SIZE ботов + total; UI показывает «показано N из M».
+  listBots: (offset = 0) => req(`/api/bots?limit=${BOTS_PAGE_SIZE}&offset=${offset}`) as Promise<{ bots: any[]; total?: number; adminKey?: boolean }>,
   createBot: (name: string, token: string, platform: 'telegram' | 'vk' = 'telegram', owner_id?: string) =>
     req('/api/bots', { method: 'POST', body: JSON.stringify({ name, token, platform, owner_id }) }),
   // ---- mini apps ----

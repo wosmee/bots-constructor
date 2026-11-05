@@ -178,6 +178,7 @@ const en: Record<TKey, string> = {
   'dash.webhookUnchecked.short': 'webhook not checked',
   'dash.open': 'open →',
   'dash.bots.title': 'My bots',
+  'dash.bots.shown': 'Showing {shown} of {total}',
   'dash.refresh': 'Refresh statuses',
   'dash.refresh.title': 'check the webhook for every bot',
   'dash.createBot': '+ New bot',

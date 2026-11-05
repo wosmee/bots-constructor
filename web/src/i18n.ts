@@ -203,6 +203,7 @@ const ru = {
   'dash.webhookUnchecked.short': 'webhook не проверен',
   'dash.open': 'открыть →',
   'dash.bots.title': 'Мои боты',
+  'dash.bots.shown': 'Показано {shown} из {total}',
   'dash.refresh': 'Обновить статусы',
   'dash.refresh.title': 'проверить webhook у всех ботов',
   'dash.createBot': '+ Создать бота',

@@ -5,15 +5,18 @@
 # иначе превью и сохранение сценария перестанут работать.
 
 /*
-  # connect-src должен содержать origin воркера API (VITE_API_BASE).
-  # Подставь свой: https://your-worker-name.your-account.workers.dev
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.telegram.org; font-src 'self' data:; connect-src 'self' https://your-worker-name.your-account.workers.dev https://api.telegram.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  # connect-src содержит origin воркера API (VITE_API_BASE) и Telegram
+  # (аватары в каталоге). Обнови при смене адреса API.
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.telegram.org; font-src 'self' data:; connect-src 'self' https://bots-constructor.vinogradovilya4060.workers.dev https://api.telegram.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
   Cross-Origin-Opener-Policy: same-origin
+  # index.html НЕ кэшировать: имя бандла в нём меняется с каждым релизом,
+  # закэшированная страница грузила бы старые (или битые) ассеты.
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Файлы в /assets/ контент-хешированные (имя меняется при любом изменении),
 # поэтому кэшируем их навечно: повторные визиты не делают ни одного запроса.

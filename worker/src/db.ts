@@ -45,27 +45,41 @@ export interface BotListItem {
 // ownerId = null -> все боты. Режим «весь список» в роутах не используется:
 // дашборд всегда скоупится владельцем (у платформенной сессии это
 // ADMIN_OWNER_ID = 'admin'), а поиск по чужим аккаунтам живёт в /api/admin/*.
-export async function listBots(db: D1Database, ownerId?: string | null): Promise<BotListItem[]> {
+// Пагинация: limit/offset опциональны — без них отдаётся весь список (старые
+// клиенты и все внутренние вызовы получают прежнее поведение). total — для
+// UI, чтобы рисовать «показано N из M» без отдельного запроса COUNT.
+export async function listBots(
+  db: D1Database,
+  ownerId?: string | null,
+  page?: { limit: number; offset: number }
+): Promise<{ bots: BotListItem[]; total: number }> {
   // Логин владельца берём LEFT JOIN'ом: у ботов платформенной сессии
   // (owner_id = 'admin') аккаунта нет, owner_login остаётся пустым, и UI не
   // выдаёт их за боты вошедшего пользователя.
   const SELECT = `SELECT b.id, b.name, b.owner_id, b.active, b.created_at, a.login AS owner_login, b.platform
                   FROM bots b LEFT JOIN accounts a ON a.id = b.owner_id`;
-  if (ownerId) {
+  const where = ownerId ? 'WHERE b.owner_id = ?' : '';
+  const binds = ownerId ? [ownerId] : [];
+  if (page && Number.isInteger(page.limit) && page.limit > 0 && Number.isInteger(page.offset) && page.offset >= 0) {
+    const total = (await db
+      .prepare(`SELECT COUNT(*) AS n FROM bots b ${where}`)
+      .bind(...binds)
+      .first<{ n: number }>())?.n ?? 0;
     const rows = (
       (await db
-        .prepare(`${SELECT} WHERE b.owner_id = ? ORDER BY b.created_at DESC`)
-        .bind(ownerId)
+        .prepare(`${SELECT} ${where} ORDER BY b.created_at DESC LIMIT ? OFFSET ?`)
+        .bind(...binds, page.limit, page.offset)
         .all<BotListItem>()) ?? { results: [] }
     ).results;
-    return rows;
+    return { bots: rows, total: Number(total) };
   }
   const rows = (
     (await db
-      .prepare(`${SELECT} ORDER BY b.created_at DESC`)
+      .prepare(`${SELECT} ${where} ORDER BY b.created_at DESC`)
+      .bind(...binds)
       .all<BotListItem>()) ?? { results: [] }
   ).results;
-  return rows;
+  return { bots: rows, total: rows.length };
 }
 
 // Боты аккаунта вместе с токенами: нужно F-017 (удаление аккаунта) — снять

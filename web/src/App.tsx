@@ -75,6 +75,8 @@ export default function App() {
   const [catalogScenario, setCatalogScenario] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [bots, setBots] = useState<Bot[]>([]);
+  // Всего ботов аккаунта (может быть больше показанных при пагинации).
+  const [botsTotal, setBotsTotal] = useState(0);
   const [miniApps, setMiniApps] = useState<{ id: string; bot_id: string; bot_name: string; bot_username: string | null; name: string; slug: string; published: boolean | number; updated_at: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -311,6 +313,7 @@ export default function App() {
       const [r, miniResult] = await Promise.all([api.listBots(), api.listOwnedMiniApps()]);
       const list: Bot[] = r.bots ?? [];
       setBots(list);
+      setBotsTotal(typeof r.total === 'number' ? r.total : list.length);
       setAdminKeySession(!!r.adminKey);
       setMiniApps(miniResult.miniapps ?? []);
       if (!list.length) {
@@ -783,6 +786,11 @@ export default function App() {
           <section className="dashboard-section" aria-labelledby="dashboard-bots-title">
             <div className="dashboard-section-head">
               <h2 id="dashboard-bots-title">{t('dash.bots.title')}</h2>
+              {botsTotal > bots.length && (
+                <span className="muted dashboard-bots-count">
+                  {t('dash.bots.shown', { shown: bots.length, total: botsTotal })}
+                </span>
+              )}
               <span className="dashboard-section-rule" aria-hidden="true" />
             </div>
             <div className="bot-grid">
