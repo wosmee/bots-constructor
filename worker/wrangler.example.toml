@@ -1,0 +1,57 @@
+name = "bots-constructor"
+main = "src/index.ts"
+compatibility_date = "2025-10-01"
+
+# Подставь СВОЙ account_id (Cloudflare → Workers & Pages → справа ID аккаунта).
+account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+
+# Кастомный домен для публичных платёжных вебхуков (короткий адрес /p/<token>).
+# custom_domain = true: wrangler сам создаёт DNS-запись в зоне, подключённой
+# к аккаунту, при деплое. Ключ ОБЯЗАТЕЛЬНО до первых [[…]]-таблиц TOML
+# (парсер TOML кладёт ключи, вставленные после таблиц, внутрь последней).
+# workers_dev = true обязателен: иначе добавление routes отключает основной
+# адрес <name>.<account-subdomain>.workers.dev, на который смотрит VITE_API_BASE.
+workers_dev = true
+# routes = [
+#   { pattern = "api.example.org", custom_domain = true },
+# ]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bots_constructor"
+# id появляется в выводе `wrangler d1 create bots_constructor`
+database_id = "YOUR_D1_DATABASE_ID"
+
+# KV: (bot_id -> webhook_secret) для auth вебхука до обращения к D1.
+# id заполняется после `wrangler kv namespace create WEBHOOK_SECRETS`.
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+# Секреты (не коммитятся): wrangler secret put ENCRYPTION_KEY  /  ADMIN_KEY
+#   ENCRYPTION_KEY — base64 от 32 случайных байт (шифрует токены ботов, AES-256-GCM)
+#   ADMIN_KEY      — ключ доступа к админ-API платформы
+# (ADMIN_TG_ID — не секрет, задан plain-переменной в [vars] ниже.)
+
+# Локально ENVIRONMENT перебивается на "dev" через .dev.vars, поэтому
+# fail-closed админский доступ не мешает разработке.
+[vars]
+ENVIRONMENT = "production"
+# Куда летит action 'notify' (блок «уведомить администратора»). Telegram user id администратора платформы.
+ADMIN_TG_ID = ""
+# Публичный базовый адрес платёжных вебхуков: кастомный домен воркера.
+# Пустое значение = фолбэк на origin запроса (локальная разработка).
+PAY_WEBHOOK_BASE = ""
+# Optional comma-separated exact host allowlist for scenario HTTP/webhook calls.
+# Empty means public hosts stay permitted; private/metadata ranges are always blocked.
+HTTP_ALLOWED_HOSTS = ""
+
+# Observability: без него ошибки прода видны только через `wrangler tail`,
+# который никто не держит открытым.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# Cron: раз в минуту обрабатывает отложенные (delay) отправки из scheduled_sends.
+[triggers]
+crons = ["* * * * *"]

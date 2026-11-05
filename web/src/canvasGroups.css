@@ -1,0 +1,150 @@
+/* ============================================================
+   Визуальные группы блоков на холсте (Промпт 2, TASK 9).
+   Группы — чисто canvas-метаданные: рисуются через ViewportPortal
+   ПОД блоками (z-index: -1 внутри стекового контекста viewport,
+   который сам выше pane и фона). Стили только на токенах
+   дизайн-системы; цвета рамки/подложки задаются инлайном из
+   палитры GROUP_COLORS, поэтому тем не боимся: альфа-подложка
+   одинаково читается и на графите, и на светлой теме.
+   ============================================================ */
+
+.canvas-group {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1; /* под блоками и связями */
+  /* Тело рамки клики пропускает к холсту (снятие выделения, panon);
+     интерактивны только заголовок, мини-панель и уголок resize. */
+  pointer-events: none;
+  box-sizing: border-box;
+  border: 1.5px dashed; /* цвет — инлайн (цвет группы) */
+  border-radius: var(--r);
+  user-select: none;
+  transition: box-shadow var(--t-mid);
+}
+
+.canvas-group.selected { box-shadow: 0 0 0 1px var(--accent); }
+
+.canvas-group-header {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-2);
+  cursor: grab;
+  pointer-events: auto;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  border-radius: var(--r) var(--r) 0 0;
+}
+
+.canvas-group-header:active { cursor: grabbing; }
+
+.canvas-group-title { overflow: hidden; text-overflow: ellipsis; }
+
+.canvas-group-count { flex: 0 0 auto; font-weight: var(--fw-normal); }
+
+/* Свёрнутая группа — плитка фиксированного размера (collapseRect). */
+.canvas-group.collapsed { border-style: solid; cursor: pointer; }
+.canvas-group.collapsed .canvas-group-header {
+  position: static;
+  height: 100%;
+  border-radius: var(--r);
+}
+
+.canvas-group-input {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--bg-deep);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  padding: 0 var(--sp-1);
+}
+
+/* Мини-панель группы: цвет, свернуть/развернуть, удалить. Появляется
+   только у выделенной группы, в полосе заголовка — там блоков нет
+   (рамка строится с запасом GROUP_HEADER_H). */
+.canvas-group-tools {
+  position: absolute;
+  top: 28px;
+  left: var(--sp-1);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  max-width: calc(100% - var(--sp-2));
+  padding: var(--sp-1);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-pop);
+  pointer-events: auto;
+}
+
+.canvas-group-swatch {
+  width: 14px;
+  height: 14px;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform var(--t-mid);
+}
+
+.canvas-group-swatch:hover:not(:disabled) { transform: scale(1.2); background: inherit; }
+.canvas-group-swatch.active { border-color: var(--text); transform: scale(1.2); }
+
+.canvas-group-tools .icon-btn { min-height: 22px; width: 22px; padding: 0; }
+
+.canvas-group-resize {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--muted);
+  border-radius: var(--r-sm);
+  background: var(--panel);
+  cursor: nwse-resize;
+  pointer-events: auto;
+}
+
+.canvas-group.selected .canvas-group-resize { border-color: var(--accent); }
+
+/* ============================================================
+   Warn-конфликты набора 2026-09: мягче, чем error (медный
+   акцент вместо красного). Классы — из badge-семейства .node-conflict.
+   ============================================================ */
+
+.node.has-conflict-warn { border-color: var(--accent) !important; box-shadow: 0 0 0 1px var(--accent); }
+.node-conflict.warn { background: var(--accent); color: var(--on-color); }
+.conflict-item.warn .muted { color: var(--warn-ink); }
+
+.conflict-pop-subhead {
+  padding: 6px 9px 4px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--muted);
+  border-top: 1px solid var(--line-soft);
+  margin-top: var(--sp-1);
+}
+
+/* Тач: крупнее цель попадания в заголовок и уголок resize. */
+@media (max-width: 480px) {
+  .canvas-group-header { height: 32px; }
+  .canvas-group-resize { width: 18px; height: 18px; right: -9px; bottom: -9px; }
+  .canvas-group-tools { top: 34px; }
+}

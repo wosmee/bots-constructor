@@ -1,0 +1,47 @@
+/* Дополнения превью (Промпт 2, TASK 7): системные строки прогона и панель
+   служебных вводов. Отдельный файл, чтобы не спорить с общими стилями. */
+
+/* Строки лога вида «[опрос] …» — события прогона, а не сообщения бота:
+   глушим их, чтобы автор не принимал скобки за пользовательский текст. */
+.bubble.bot.sys {
+  opacity: .78;
+  border-style: dashed;
+  font-size: var(--fs-sm);
+}
+
+.preview-sim {
+  margin-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+  padding-top: var(--sp-2);
+}
+.preview-sim summary {
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.preview-sim summary:hover { color: var(--accent); }
+.preview-sim-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--sp-2);
+}
+.preview-sim-chips .badge {
+  cursor: pointer; font-size: 11px; padding: 3px 8px;
+  background: transparent; border: 1px solid var(--line); color: var(--text-dim);
+}
+.preview-sim-chips .badge:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+.preview-sim-chips .badge:disabled { opacity: .5; cursor: default; }
+.preview-sim-hint { font-size: 11px; line-height: 1.45; margin-top: var(--sp-2); }
+
+/* Ожидание (wait): отсчёт и подсказка о ветках. */
+.preview-wait { margin-top: var(--sp-2); }
+.preview-wait-head {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--fs-sm); color: var(--muted);
+}
+.preview-wait-branches { font-size: 11px; line-height: 1.45; margin-top: 6px; }
+
+/* Меню бота: постоянная reply-клавиатура из блока «Меню». Отдельный ряд с
+   подписью — чтобы не путать с кнопками текущего блока. */
+.preview-menu { margin-top: var(--sp-2); }
+.preview-menu-title { font-size: 11px; margin-bottom: 6px; }
+/* Тупик без кнопок (блок с одними ссылками) — подсказка вместо пустого ряда. */
+.preview-note { font-size: 11px; line-height: 1.45; margin-top: var(--sp-2); }

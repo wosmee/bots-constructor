@@ -1,0 +1,140 @@
+/* ============================================================
+   Страница «Библиотека» (SubflowsPage) — подсценарии владельца
+   (уровень аккаунта). Только var() токены дизайн-системы
+   (styles.css), чтобы обе темы работали без переопределений.
+   Mobile-first: при 640px действия карточки на всю ширину.
+   ============================================================ */
+
+/* ---- карточка фрагмента ---- */
+
+.sf-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+
+/* Карточка — прямой ребён .data-page: там ритм задаёт gap контейнера,
+   собственный нижний отступ удваивал бы расстояние. Правило живёт рядом с
+   .sf-card (владелец отступа), а не в styles.css. Вне .data-page класс
+   сохраняет прежний margin. */
+.data-page > .sf-card {
+  margin-bottom: 0;
+}
+
+.sf-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+}
+
+.sf-card-head h3 {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sf-card-head .spacer {
+  flex: 1;
+}
+
+.sf-card-actions {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sf-desc {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  line-height: var(--lh-body);
+  overflow-wrap: anywhere;
+}
+
+/* входы/выходы чипами: подпись раздела + чипы (.data-var из styles.css) */
+.sf-io {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+
+.sf-io .field-label {
+  margin: 0;
+}
+
+/* ---- встроенное подтверждение удаления (как .pay-confirm) ---- */
+
+.sf-confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--danger);
+  border-radius: var(--r-sm);
+  background: var(--danger-soft);
+}
+
+.sf-confirm p {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  color: var(--danger-ink);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+/* ---- прогон фрагмента: лог реплик ---- */
+
+.sf-preview-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: var(--sp-3);
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+}
+
+.sf-preview-log .bubble {
+  max-width: 85%;
+}
+
+/* ---- поля формы в модалке ---- */
+
+.sf-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.sf-issues {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* ---- 640px и уже ---- */
+
+@media (max-width: 640px) {
+  .sf-card-actions {
+    width: 100%;
+  }
+
+  .sf-card-actions button {
+    flex: 1;
+  }
+}

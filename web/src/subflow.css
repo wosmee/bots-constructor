@@ -1,0 +1,48 @@
+/* ============================================================
+   Подсценарии: узел-«дверь», бейджи, крошки drill-in, диалоги
+   ============================================================ */
+
+/* Вызов подсценария читается как «дверь» во фрагмент, а не как обычный шаг:
+   двойной контур и мягкое свечение цветом блока. */
+.node.subflow-node {
+  border-width: 2px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #7c2d12 35%, transparent), var(--shadow-pop);
+}
+.node.subflow-node .node-title { letter-spacing: .02em; }
+.node.subflow-return-node { border-style: double; border-width: 3px; }
+
+/* Бейджи статуса вызова (ревизия / устарел / не найден / цикл) — в заголовке узла. */
+.node-badge.badge {
+  font-size: 10px; padding: 0 5px; border-radius: 999px; border: 1px solid transparent;
+  margin-left: 4px; line-height: 16px; white-space: nowrap;
+}
+
+/* Хлебные крошки drill-in: «бот / фрагмент rev N». */
+.sf-crumb-sep { color: var(--muted); }
+.sf-crumb-rev { margin-left: 6px; vertical-align: middle; }
+
+/* Баннер устаревших вызовов переиспользует .connect-banner; свой акцент — медь. */
+.sf-stale-banner { border-color: var(--accent); }
+
+/* Диалог «создать подсценарий из выделения» и прогон фрагмента. */
+.sf-extract-modal, .sf-preview-modal { max-width: 520px; }
+.sf-io-list {
+  margin: 4px 0 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 2px;
+  font-size: var(--fs-sm);
+}
+.sf-preview-log {
+  display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto;
+  font-size: var(--fs-sm);
+}
+.sf-preview-log .sim-line.bot { color: var(--text); }
+.sf-preview-log .sim-line.user { color: var(--muted); font-style: italic; }
+.sf-preview-issues { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.sf-preview-issues .issue-row.error { color: var(--danger); }
+.sf-preview-issues .issue-row.warn { color: var(--warn-ink, var(--accent)); }
+
+/* Предупреждение про shared-scope в инспекторе: мягче обычного callout. */
+.callout.warn {
+  background: var(--warn-soft, var(--accent-soft));
+  border-color: var(--accent);
+}
+.insp-sf-note { margin-top: 6px; font-size: var(--fs-sm); }

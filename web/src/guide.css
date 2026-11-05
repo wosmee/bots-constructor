@@ -1,0 +1,109 @@
+/* ============================================================
+   Гайд (Промпт 2, TASKS 5+6): глобальный поиск, результаты,
+   оглавление вкладки, подсветка цели перехода.
+   Базовые классы (.guide-search, .guide-tabs, .block-ref, .recipe,
+   .faq-item, .modal-*) живут в styles.css — здесь только надстройка
+   на тех же токенах, поэтому обе темы работают автоматически.
+   ============================================================ */
+
+/* ---------- шапка модалки: титул+крестик, поиск, табы — колонкой ---------- */
+.modal-head.guide-head { flex-direction: column; align-items: stretch; gap: var(--sp-3); }
+.guide-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
+
+/* ---------- строка поиска: инпут с иконкой и кнопкой очистки ---------- */
+.guide-search-wrap { display: flex; flex-direction: column; gap: var(--sp-2); }
+.guide-search-row { position: relative; display: flex; align-items: center; }
+.guide-search-row > .search-icon {
+  position: absolute; left: var(--sp-3); color: var(--muted);
+  display: inline-flex; pointer-events: none;
+}
+.guide-search input { padding-left: 34px; padding-right: 34px; }
+.guide-search-clear {
+  position: absolute; right: 4px; display: inline-flex; align-items: center;
+  justify-content: center; width: 24px; height: 24px; padding: 0;
+  background: transparent; border: none; border-radius: var(--r-sm);
+  color: var(--muted); cursor: pointer; transition: color var(--t), background var(--t);
+}
+.guide-search-clear:hover { color: var(--text); background: var(--panel-3); }
+.guide-search-hint { font-size: var(--fs-sm); color: var(--muted); }
+
+/* ---------- результаты поиска ---------- */
+.guide-results {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r);
+  padding: var(--sp-2); max-height: 46vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: var(--sp-1);
+}
+.guide-results-empty { padding: var(--sp-3); font-size: var(--fs-sm); color: var(--muted); line-height: var(--lh-prose); }
+.guide-results-group + .guide-results-group { margin-top: var(--sp-2); padding-top: var(--sp-2); border-top: 1px solid var(--line-soft); }
+.guide-results-head { display: flex; align-items: baseline; gap: var(--sp-2); padding: 0 var(--sp-2) var(--sp-1); }
+.guide-results-head b {
+  font-size: var(--fs-xs); font-weight: var(--fw-semibold); color: var(--muted);
+}
+.guide-results-head .count { font-size: var(--fs-xs); color: var(--muted); }
+.guide-hit {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  background: transparent; border: 1px solid transparent; border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2); color: var(--text);
+  font-size: var(--fs-md); line-height: var(--lh-body);
+  transition: background var(--t), border-color var(--t);
+}
+.guide-hit:hover { background: var(--panel-3); border-color: var(--line); }
+.guide-hit.active { background: var(--accent-soft); border-color: var(--accent); }
+.guide-hit .hit-label { font-weight: var(--fw-medium); }
+.guide-hit .hit-snippet {
+  display: block; font-size: var(--fs-sm); color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.guide-showall { align-self: flex-start; margin-top: var(--sp-1); }
+
+/* ---------- оглавление вкладки ----------
+   Десктоп: sticky-колонка слева; мобайл: тот же список сворачивается
+   в <details> и встаёт над контентом (CSS решает через media query,
+   JSX один). */
+.guide-toc {
+  position: sticky; top: 0; align-self: flex-start;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r);
+  padding: var(--sp-2); min-width: 150px; max-width: 200px;
+  font-size: var(--fs-sm);
+}
+.guide-toc details > summary {
+  cursor: pointer; color: var(--text-dim); font-weight: var(--fw-medium);
+  font-size: var(--fs-sm); list-style-position: inside;
+}
+.guide-toc ul { list-style: none; margin: var(--sp-1) 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.guide-toc button {
+  display: block; width: 100%; text-align: left; background: transparent;
+  border: none; border-radius: var(--r-sm); padding: 3px var(--sp-2);
+  color: var(--muted); font-size: var(--fs-sm); cursor: pointer;
+  transition: color var(--t), background var(--t);
+}
+.guide-toc button:hover { color: var(--text); background: var(--panel-3); }
+.guide-with-toc { display: flex; gap: var(--sp-4); align-items: flex-start; min-height: 0; }
+.guide-with-toc > .guide-section { flex: 1 1 auto; min-width: 0; }
+/* Keep the TOC independently scrollable inside the modal rather than tied to
+   the long article column. */
+.guide .modal-body { min-height: 0; }
+.guide-toc ul { max-height: min(62vh, 620px); overflow-y: auto; overscroll-behavior: contain; }
+
+/* ---------- подсветка цели после перехода из поиска ---------- */
+@keyframes guide-flash {
+  0%   { background-color: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+  60%  { background-color: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+  100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
+}
+.guide-flash { animation: guide-flash 1.2s ease-out; border-radius: var(--r-sm); }
+
+/* ---------- справочник блоков ---------- */
+.guide-block-item + .guide-block-item { margin-top: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--line-soft); }
+.guide-block-example { margin-top: 4px; font-size: var(--fs-sm); color: var(--text-dim); line-height: var(--lh-prose); }
+.guide-block-machinename { margin-left: auto; font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted); }
+
+/* ---------- 360px: оглавление сворачивается, результаты плотнее ---------- */
+@media (max-width: 640px) {
+  .guide-with-toc { flex-direction: column; }
+  .guide-toc { position: static; width: 100%; max-width: none; max-height: 28vh; }
+  .guide-toc ul { max-height: 20vh; flex-direction: row; flex-wrap: wrap; gap: var(--sp-1); }
+  .guide-toc button { width: auto; }
+  .guide-results { max-height: 55vh; }
+  .guide-hit .hit-snippet { display: none; }
+}

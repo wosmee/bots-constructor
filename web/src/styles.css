@@ -1,0 +1,1845 @@
+/* ============================================================
+   Конструктор ботов — дизайн-система
+   Предмет: визуальная сборка сценариев Telegram-бота. Это чертёж
+   потока, а не маркетинговая страница: графитовая «чертёжная»
+   подложка, медный акцент (карандашная пометка), моно — только
+   для машинных данных (ID, переменные, токены).
+   ============================================================ */
+
+:root {
+  /* графитовая шкала */
+  --bg: #14171e;
+  --bg-deep: #101319;
+  --panel: #1a1e27;
+  --panel-2: #212734;
+  --panel-3: #2a3140;
+  --line: #2a3140;
+  --line-soft: #232a37;
+
+  /* текст */
+  --text: #e9ecf3;
+  --text-dim: #b9c1d1;
+  --muted: #98a2b6;
+
+  /* акцент — медь */
+  --accent: #e0913a;
+  --accent-2: #c97a2b;
+  --accent-ink: #1b1206;
+  --accent-soft: rgba(224, 145, 58, .12);
+
+  --danger: #e5484d;
+  --danger-soft: rgba(229, 72, 77, .12);
+  --ok: #46a758;
+
+  /* Типографическая шкала. Было: 13px у всего и три размера заголовков,
+     которые ничем не отличались (h3 и h4 — оба 14px). Теперь размер — это
+     роль, а не привычка: см. блок «роли текста» ниже. */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-base: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+  --lh-tight: 1.25;
+  --lh-body: 1.5;
+  --lh-prose: 1.65;
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* Ритм 4px. Spacing — шаг между элементами, а не «на глаз». */
+  --r-sm: 6px;
+  --r: 10px;
+  --r-lg: 14px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+
+  /* Кнопки: высота задаётся токеном, поэтому ряд кнопок сам выравнивается
+     по вертикали — вручную padдинги больше не подгоняем. */
+  --btn-h: 32px;
+  --btn-h-sm: 28px;
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* Мягкие фоны статусов и их «чернила»: цвет статуса перестаёт быть
+     литералом в каждом селекторе (было пять классов с #ff8a8e/#7fd891/#f0b270). */
+  --ok-soft: rgba(70, 167, 88, .14);
+  --ok-ink: #7fd891;
+  --warn-soft: rgba(224, 145, 58, .14);
+  --warn-ink: #f0b270;
+  --danger-ink: #ff8a8e;
+
+  /* Поверхности приподняты одинаково: один источник света, одно направление. */
+  --elev-1: 0 1px 2px rgba(6, 9, 14, .28);
+  --elev-2: 0 6px 18px rgba(6, 9, 14, .38);
+  --elev-3: 0 14px 34px rgba(6, 9, 14, .55);
+
+  /* Слои. Было шестнадцать литералов z-index (10…100) без шкалы — поповеры
+     и тур спорили за порядок. */
+  --z-canvas: 10;
+  --z-bar: 20;
+  --z-panel: 30;
+  --z-overlay: 40;
+  --z-popover: 60;
+  --z-modal: 70;
+  --z-tour: 90;
+  --z-toast: 100;
+
+  --shadow-pop: 0 14px 34px rgba(6, 9, 14, .55);
+  --shadow-1: 0 1px 2px rgba(6, 9, 14, .28);
+  --shadow-2: 0 6px 18px rgba(6, 9, 14, .34);
+
+  /* Фон затемнений и «стекла»: одна пара значений на весь продукт. */
+  --scrim: rgba(8, 10, 14, .72);
+  --scrim-soft: rgba(0, 0, 0, .28);
+  --dim-ink: #6b7488;
+
+  /* Инверсия блока на цветном заголовке узла: тёмный ink на цветной плашке. */
+  --on-color: rgba(12, 14, 18, .92);
+  --on-color-soft: rgba(0, 0, 0, .28);
+  --edge: #4a5468;
+
+  /* Единая шкала времени, чтобы все элементы двигались одинаково:
+     --t       — микро-состояния (hover, фокус, нажатие): 120–180ms ease-out;
+     --t-mid   — раскрытия в строке (поповеры, каретки, тултипы);
+     --t-exit  — выход любой поверхности: короче входа (~0.6×). Вход без выхода
+                 читался как рывок, поэтому exit — отдельный токен, а не
+                 «то же, что enter»;
+     --t-panel — панели и drawers: 220–320ms ease-out;
+     --t-modal — модалки: мягкая кривая opacity + scale. */
+  --t: 150ms ease-out;
+  --t-mid: 180ms cubic-bezier(.2, .8, .2, 1);
+  --t-exit: 170ms ease-in;
+  --t-panel: 260ms cubic-bezier(.2, .8, .2, 1);
+  --t-modal: 280ms cubic-bezier(.2, .8, .2, 1);
+}
+
+/* ---------- роли текста ---------- */
+
+/* Заголовки уровней обязаны различаться размером, а не только оттенком. */
+.screen-title { font-size: var(--fs-xl); font-weight: var(--fw-semibold); line-height: var(--lh-tight); }
+.modal-title { font-size: var(--fs-lg); font-weight: var(--fw-semibold); line-height: var(--lh-tight); }
+.section-title { font-size: var(--fs-base); font-weight: var(--fw-semibold); line-height: var(--lh-tight); color: var(--text); }
+.field-label { font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--muted); }
+.caption { font-size: var(--fs-sm); color: var(--muted); }
+.machine { font-family: var(--mono); font-size: var(--fs-sm); }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Заголовки: единая лестница размеров, чтобы h2 всегда был больше h3. */
+h1, h2, h3, h4 { margin: 0; font-weight: var(--fw-semibold); letter-spacing: -.01em; line-height: var(--lh-tight); }
+h1 { font-size: var(--fs-2xl); }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+h4 { font-size: var(--fs-base); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- элементы управления ---------- */
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-base);
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  /* Высота — токеном, а не вертикальными паддингами: кнопка с иконкой и
+     кнопка без неё выравниваются в одном ряду сами. */
+  min-height: var(--btn-h);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 var(--sp-3);
+  transition: border-color var(--t), background var(--t), color var(--t), box-shadow var(--t), transform var(--t);
+}
+button:hover:not(:disabled) { border-color: var(--panel-3); background: var(--panel-3); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: .45; cursor: default; }
+
+/* Кнопка-иконка: квадрат 28px в панелях, 32px отдельно стоящая. */
+button.icon-btn {
+  width: var(--btn-h-sm); height: var(--btn-h-sm); min-height: var(--btn-h-sm);
+  padding: 0; gap: 0; flex: 0 0 auto;
+}
+button.icon-btn.lg { width: var(--btn-h); height: var(--btn-h); min-height: var(--btn-h); }
+
+/* Иерархия из трёх ступеней: primary — ровно одно действие на поверхность. */
+button.primary {
+  background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: var(--fw-semibold);
+}
+/* Один сигнал наведения: сдвиг светлоты заливки. Кольцо оставлено только фокусу —
+   раньше hover давал и заливку, и тень одновременно. */
+button.primary:hover:not(:disabled) { background: var(--accent-2); border-color: var(--accent-2); }
+button.secondary { background: transparent; border-color: var(--line); color: var(--text); }
+button.secondary:hover:not(:disabled) { background: var(--panel-2); border-color: var(--panel-3); }
+button.ghost { background: transparent; border-color: transparent; color: var(--text-dim); }
+button.ghost:hover:not(:disabled) { background: var(--panel-2); border-color: var(--line); color: var(--text); }
+button.danger {
+  background: transparent; border-color: var(--danger); color: var(--danger);
+}
+button.danger:hover:not(:disabled) { background: var(--danger-soft); }
+/* Размерная сетка кнопок: sm — в строках и панелях, lg — в модалках. */
+button.sm { min-height: var(--btn-h-sm); padding: 0 var(--sp-2); font-size: var(--fs-md); }
+button.lg { min-height: 36px; padding: 0 var(--sp-4); }
+
+:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-sm);
+}
+
+input, textarea, select {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--fs-base);
+  color: var(--text);
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2) 10px;
+  transition: border-color var(--t), box-shadow var(--t);
+}
+input::placeholder, textarea::placeholder { color: var(--dim-ink); }
+input:focus, textarea:focus, select:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+}
+textarea { min-height: 74px; resize: vertical; line-height: var(--lh-body); }
+label {
+  display: block; font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--muted);
+  margin: 0 0 var(--sp-1);
+}
+
+.muted { color: var(--muted); font-size: var(--fs-sm); }
+/* Заметка «Ещё в разработке» по кнопке создания мини-аппа: исчезает сама. */
+.wip-toast {
+  margin: var(--sp-2) 0; padding: var(--sp-2) 10px;
+  border: 1px solid var(--muted); border-radius: var(--r-sm);
+  animation: fade-in var(--t-mid);
+}
+.mono { font-family: var(--mono); }
+.err {
+  color: var(--danger); font-size: var(--fs-sm); background: var(--danger-soft);
+  border: 1px solid var(--danger); border-radius: var(--r-sm); padding: var(--sp-2) 10px;
+  animation: fade-in var(--t-mid);
+}
+.not-found-screen {
+  min-height: 100vh; display: grid; place-items: center; padding: 24px;
+  background: var(--bg-deep);
+}
+.not-found-card {
+  width: min(100%, 430px); padding: 32px; border: 1px solid var(--line); border-top-color: var(--accent);
+  border-radius: var(--r-lg); background: var(--panel); box-shadow: var(--shadow-pop); text-align: center;
+}
+.not-found-card .brand { justify-content: center; margin-bottom: 22px; }
+.not-found-code { margin: 0; color: var(--accent); font-family: var(--mono); font-size: clamp(48px, 12vw, 76px); line-height: 1; }
+.not-found-card h1 { margin: 10px 0 6px; }
+.not-found-card .muted { display: block; margin-bottom: 20px; }
+/* Единый бейдж. Пять классов (.pill, .status-pill, .tag, .var-chip, .op-chip,
+   .target-chip) раньше делали одну работу с разными паддингами и разными
+   литеральными цветами текста; теперь у них одно визуальное определение,
+   а старые имена остались псевдонимами, чтобы не переписывать разметку. */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px var(--sp-2); border-radius: 999px;
+  font-size: var(--fs-xs); font-weight: var(--fw-semibold); line-height: 1.5;
+  color: var(--muted); background: var(--panel-2); border: 1px solid transparent;
+  white-space: nowrap;
+}
+.badge.md { padding: 3px 9px; font-size: var(--fs-sm); }
+.badge.mono { font-family: var(--mono); font-weight: var(--fw-normal); }
+.badge.neutral { color: var(--muted); background: var(--panel-3); }
+.badge.ok { color: var(--ok-ink); background: var(--ok-soft); }
+.badge.warn { color: var(--warn-ink); background: var(--warn-soft); border-color: var(--accent); }
+.badge.danger { color: var(--danger-ink); background: var(--danger-soft); border-color: var(--danger); }
+.badge.accent { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+button.badge { cursor: pointer; }
+button.badge.ok:hover { background: rgba(70, 167, 88, .22); }
+button.badge.danger:hover { background: rgba(229, 72, 77, .22); }
+button.badge.warn:hover { background: rgba(224, 145, 58, .24); }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono);
+  font-size: var(--fs-xs); font-weight: var(--fw-normal); color: var(--muted);
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px var(--sp-2);
+}
+.spacer { flex: 1; }
+.checkline {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text);
+  cursor: pointer; margin: 12px 0 0;
+}
+.checkline input[type="checkbox"] {
+  width: 16px; height: 16px; flex: 0 0 auto; margin: 0; padding: 0;
+  accent-color: var(--accent); cursor: pointer;
+}
+.row { display: flex; align-items: center; gap: 8px; }
+.row-actions { display: flex; gap: 8px; margin-top: 14px; }
+.dot { width: 8px; height: 8px; border-radius: 999px; flex: 0 0 auto; display: inline-block; }
+.icon { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* ---------- каркас ---------- */
+
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex; align-items: center; gap: var(--sp-3);
+  height: 56px; padding: 0 18px; flex: 0 0 auto;
+  background: var(--panel); border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+}
+.brand { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-lg); font-weight: var(--fw-semibold); white-space: nowrap; }
+.logo { color: var(--accent); display: inline-flex; }
+.who {
+  font-size: var(--fs-sm); color: var(--text-dim);
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 999px; padding: 4px 10px; white-space: nowrap;
+}
+
+/* Кластеры в шапке: группы читаются как фразы, между ними — разделитель.
+   Воздух между кнопками увеличен (8 → 12px): плотная россыпь утомляла глаза. */
+.topbar-group { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+.topbar > .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.back-control {
+  flex: 0 0 auto; color: var(--text); background: var(--accent-soft); border-color: rgba(224,145,58,.55);
+  font-weight: var(--fw-semibold); padding-inline: var(--sp-3);
+}
+.back-control:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.topbar-sep {
+  width: 1px; height: 22px; flex: 0 0 auto;
+  background: var(--line-soft); margin: 0 2px;
+}
+
+.dashboard { flex: 1; padding: 24px 18px 40px; max-width: 1080px; width: 100%; margin: 0 auto; }
+
+.support-launcher { position: fixed; right: 20px; bottom: 20px; z-index: var(--z-panel); box-shadow: var(--shadow-2); }
+.support-widget-backdrop { position: fixed; inset: 0; z-index: var(--z-overlay); background: var(--scrim-soft); pointer-events: auto; animation: fade-in var(--t-mid); }
+.support-widget { position: absolute; right: 20px; bottom: 20px; width: min(380px, calc(100vw - 24px)); max-height: min(620px, calc(100vh - 36px)); overflow: auto; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-pop); animation: pop-in var(--t-panel); transform-origin: bottom right; }
+.support-widget.is-closing { animation: surface-out var(--t-exit) forwards; }
+.support-widget-backdrop.is-closing { animation: fade-out var(--t-exit) forwards; }
+.support-widget-head, .support-thread-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.support-widget-list { display: grid; gap: 6px; margin-top: 12px; }
+.support-widget-list button { display: grid; gap: 3px; text-align: left; }
+.support-widget > * { margin-bottom: 8px; }
+.support-page {
+  padding: 24px 18px 40px; max-width: 1280px; width: 100%; margin: 0 auto;
+  /* ритм страницы: gap между фильтрами и раскладкой вместо margin-удвоения */
+  display: flex; flex-direction: column; gap: var(--sp-3);
+}
+.support-filters { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.support-page > .support-filters { margin-bottom: 0; }
+.support-layout { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(0, 1.5fr); gap: 12px; min-height: 520px; }
+.support-list, .support-thread { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
+.support-list { display: grid; align-content: start; gap: 6px; overflow: auto; }
+.support-list-item { display: grid; gap: 2px; text-align: left; }
+.support-list-item.active { border-color: var(--accent); background: var(--accent-soft); }
+.support-thread { min-width: 0; }
+.support-messages { display: grid; gap: 8px; max-height: 370px; overflow: auto; margin: 12px 0; }
+.support-message { padding: 9px 11px; background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: var(--r-sm); white-space: pre-wrap; overflow-wrap: anywhere; }
+.support-message.staff { border-color: rgba(224,145,58,.45); }
+.support-reply { display: grid; gap: 8px; }
+.support-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; margin-left: 5px; padding: 0 4px; border-radius: 999px; background: var(--danger); color: white; font-size: 10px; }
+/* Номер обращения (#N) — моноширинный, удобно копировать и цитировать. */
+.support-number { color: var(--accent); font-size: .92em; }
+
+@media (max-width: 720px) {
+  .support-filters, .support-layout { grid-template-columns: 1fr; }
+  .support-layout { min-height: 0; }
+  .support-list { max-height: 260px; }
+  .support-launcher { right: 12px; bottom: 12px; }
+  .support-widget { right: 12px; bottom: 12px; }
+}
+
+.create-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 18px; margin-bottom: 20px; max-width: 460px;
+  box-shadow: var(--shadow-1); animation: pop-in var(--t-mid);
+}
+.create-card h3 { font-size: 15px; margin-bottom: 2px; }
+.create-card .muted { display: block; margin-bottom: 10px; }
+
+.bot-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 12px;
+}
+
+/* ---------- дашборд: секции с разделителем ---------- */
+/* Секции дашборда («Мои боты» / «Мои мини-аппы») разделяются тонкой
+   светленькой полоской, гаснущей к правому краю: граница видна, но не
+   спорит с карточками. Раньше заголовок мини-аппов лип прямо к нижней
+   рамке сетки ботов — разделения не было вообще. */
+.dashboard-section + .dashboard-section { margin-top: var(--sp-6); }
+.dashboard-section-head {
+  display: flex; align-items: center; gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.dashboard-section-head h2 {
+  font-size: var(--fs-lg); font-weight: var(--fw-semibold);
+  color: var(--text); white-space: nowrap;
+}
+.dashboard-section-rule {
+  flex: 1; min-width: 24px; height: 1px;
+  background: linear-gradient(90deg, var(--edge) 0%, var(--line) 45%, transparent 100%);
+}
+.bot-card {
+  text-align: left; padding: 14px 16px; border-radius: var(--r);
+  background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px;
+  transition: border-color var(--t), background var(--t), transform var(--t), box-shadow var(--t);
+}
+.bot-card:hover {
+  border-color: var(--accent); background: var(--panel-2);
+  transform: translateY(-1px); box-shadow: var(--shadow-2);
+}
+.bot-card-name { font-size: 15px; font-weight: 500; }
+.bot-card-id {
+  font-family: var(--mono); font-size: var(--fs-xs); color: var(--dim-ink); margin-top: 2px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+
+.empty-dash { text-align: left; padding: 48px 0; animation: fade-in var(--t-mid); }
+.empty-dash h2 { font-size: 20px; margin-bottom: 6px; }
+.empty-icon { color: var(--accent); display: flex; align-items: center; justify-content: center; }
+
+/* ---------- вход ---------- */
+
+.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-card {
+  width: 100%; max-width: 380px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: var(--r-lg); padding: 26px;
+  display: flex; flex-direction: column; gap: 8px;
+  box-shadow: var(--shadow-pop); animation: pop-in var(--t-modal);
+}
+.login-card .brand { margin-bottom: 6px; }
+.login-card h3 { font-size: 17px; margin: 4px 0; }
+.login-card .muted { margin-bottom: 8px; }
+.login-card input { margin-bottom: 12px; }
+.login-card button.primary { width: 100%; padding: 10px; }
+
+.tab-row { display: flex; gap: 4px; margin-bottom: 14px; background: var(--bg-deep); padding: 4px; border-radius: var(--r-sm); }
+.tab-row .tab {
+  flex: 1; background: transparent; border-color: transparent; color: var(--muted); padding: 6px 8px; font-size: 12px;
+  transition: color var(--t), background var(--t), border-color var(--t);
+}
+.tab-row .tab.active { color: var(--text); background: var(--panel-2); border-color: var(--line); }
+.tab-row .tab:hover:not(.active) { color: var(--text); background: transparent; border-color: transparent; }
+
+/* ---------- конструктор ---------- */
+
+/* Корень конструктора: сам задаёт высоту окна, иначе вложенный флекс
+   схлопывается и у холста (react-flow) нулевая высота. */
+.constructor { height: 100vh; display: flex; flex-direction: column; min-height: 0; }
+.constructor-top {
+  display: flex; align-items: center; gap: 8px;
+  height: 52px; padding: 0 14px; flex: 0 0 auto;
+  background: var(--panel); border-bottom: 1px solid var(--line);
+  overflow-x: auto; overflow-y: hidden;
+}
+
+/* ---------- верхняя панель: тонкая полоса + раскрытие ---------- */
+
+/* Свёрнутая полоса — ~30px и больше не тратит вертикаль постоянно. Раскрытая
+   часть выезжает поверх холста (position: absolute), поэтому канвас не
+   пересчитывает размеры и не дёргается при наведении. */
+.constructor-top.bar {
+  position: relative; display: block; height: auto; padding: 0;
+  overflow: visible; z-index: var(--z-bar);
+}
+.bar-strip {
+  display: flex; align-items: center; gap: 10px;
+  height: 32px; padding: 0 16px;
+}
+.bar-strip .save-state { font-size: 11px; }
+.bar-strip .status { max-width: 340px; }
+.bar-toggle { width: var(--btn-h-sm); height: var(--btn-h-sm); min-height: var(--btn-h-sm); padding: 0; }
+.bar-caret { display: inline-flex; transition: transform var(--t-mid); }
+.constructor-top.bar.open .bar-caret { transform: rotate(180deg); }
+.bar-row {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 24;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px; background: var(--panel); border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+  /* Свёрнутое состояние: строка остаётся в DOM (её видно в анимации выхода и
+     в неё можно ставить фокус), но не перехватывает клики. Пока узел
+     монтировался по условию, выхода не существовало вовсе, а slide-down
+     проигрывался заново на каждой смене состояния. */
+  opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-6px);
+  transition: opacity var(--t-panel), transform var(--t-panel), visibility 0s linear var(--t-panel);
+}
+.constructor-top.bar.open .bar-row {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scaleY(1);
+  transition: opacity var(--t-panel), transform var(--t-panel), visibility 0s;
+}
+.constructor-top.bar .bar-row { transform-origin: top center; transform: translateY(-10px) scaleY(.96); }
+.bar-row .topbar-group { flex-wrap: wrap; }
+/* Режим «всегда видна» (настройка устройства): раскрытая часть занимает своё
+   место в раскладке, а не висит над холстом — так она не прячет блоки.
+   В slide строка всегда видима только при классе open — в этом и разница
+   между режимами, которую видно на экране. */
+.constructor-top.bar.always .bar-row {
+  position: static; box-shadow: none;
+  opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+}
+/* «compact» — плотный режим для профи. Полоса при этом остаётся полосой:
+   правила трогают только кнопки, иначе они спорили бы с .bar-strip. */
+.constructor-top.compact button { padding: 5px 9px; font-size: 12px; }
+.constructor-top.compact .bar-strip { gap: 7px; padding: 0 12px; }
+.bot-name {
+  font-size: 14px; font-weight: 500; white-space: nowrap;
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis;
+}
+.status {
+  font-size: 12px; color: var(--muted); white-space: nowrap;
+  max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Палитра + холст + инспектор — одна строка. */
+.workspace { flex: 1; display: flex; min-height: 0; min-width: 0; }
+.canvas { flex: 1; min-width: 0; min-height: 0; position: relative; background: var(--bg-deep); }
+.canvas .react-flow { width: 100%; height: 100%; }
+
+/* палитра блоков */
+.palette {
+  width: 240px; flex: 0 0 auto; overflow-y: auto;
+  background: var(--panel); border-right: 1px solid var(--line); padding: var(--sp-3);
+}
+.palette-group { margin-bottom: var(--sp-4); }
+.palette-group-title {
+  font-size: 11px; color: var(--muted); margin-bottom: 6px;
+}
+.palette-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  background: transparent; border-color: transparent; padding: 6px 8px; font-size: 13px;
+}
+.palette-item:hover {
+  background: var(--panel-2); border-color: var(--line); transform: translateX(2px);
+}
+.palette-hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+
+/* ---------- палитра: поиск, группы, подсказки новичку ---------- */
+
+.palette-search { position: relative; margin-bottom: 10px; }
+.palette-search input { padding-right: 28px; }
+.palette-search-clear {
+  position: absolute; top: 50%; right: 2px; transform: translateY(-50%);
+  padding: 2px 7px; font-size: 12px; color: var(--muted);
+}
+.palette-empty { padding: 10px 2px; }
+
+/* Заголовок группы — кнопка: заголовок, каретка и число блоков. Счётчик
+   показывает, что внутри, ещё до раскрытия. */
+.palette-group-title {
+  display: flex; align-items: center; gap: 6px; width: 100%; text-align: left;
+  background: transparent; border-color: transparent; padding: 5px 6px;
+  font-size: 11px; letter-spacing: 0; color: var(--muted);
+  border-radius: var(--r-sm);
+}
+.palette-group-title:hover:not(:disabled) { background: var(--panel-2); border-color: var(--line); color: var(--text-dim); }
+.palette-group-title.open { color: var(--text-dim); }
+.palette-caret { font-size: 9px; line-height: 1; }
+.palette-group-count { margin-left: auto; font-size: 10px; letter-spacing: 0; text-transform: none; }
+.palette-group-items { display: flex; flex-direction: column; }
+.palette-item-text { display: flex; flex-direction: column; min-width: 0; }
+.palette-item-hint { font-size: 11px; color: var(--muted); line-height: 1.35; margin-top: 2px; white-space: normal; }
+.palette-item { align-items: flex-start; }
+.palette-item .dot { margin-top: 4px; }
+
+/* Тумблер «Продвинутые блоки» внизу палитры — вход в группу advanced для
+   новичка (skill_level 'low'), у которого она скрыта. */
+.palette-advanced-toggle {
+  width: 100%; text-align: left; padding: 6px 8px; margin-top: var(--sp-2);
+  font-size: 12px; color: var(--muted); border-style: dashed;
+}
+.palette-advanced-toggle:hover { color: var(--text-dim); border-color: var(--accent); }
+
+/* инспектор */
+.inspector {
+  width: 320px; flex: 0 0 auto; overflow-y: auto;
+  background: var(--panel); border-left: 1px solid var(--line);
+  /* Плотность инспектора отличается от панели: 16px по краям против 12px в баре. */
+  padding: var(--sp-4);
+}
+.inspector-head {
+  position: sticky; top: calc(-1 * var(--sp-4)); margin: calc(-1 * var(--sp-4)) calc(-1 * var(--sp-4)) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--panel); border-bottom: 1px solid var(--line);
+  font-size: var(--fs-base); font-weight: var(--fw-semibold); display: flex; align-items: center; gap: var(--sp-2);
+}
+
+/* узлы графа */
+/* overflow: visible — хендлы соединений живут на кромке узла и выступают
+   наружу на половину диаметра; overflow: hidden обрезал их и лишал клика. */
+.node {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--r); overflow: visible; font-size: var(--fs-sm); min-width: 200px;
+  box-shadow: var(--elev-1);
+}
+/* Наведение — только яркость рамки, без заливки и тени: состояние читается
+   одним сигналом, а не тремя сразу. */
+.node:hover { border-color: var(--panel-3); }
+.node-title {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 12px; font-size: var(--fs-md); font-weight: var(--fw-semibold); color: var(--on-color);
+  letter-spacing: .01em;
+  border-radius: calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0;
+}
+.node-badge {
+  display: inline-flex; font-family: var(--mono); font-size: 10px; background: var(--on-color-soft);
+  border-radius: 4px; padding: 1px 5px; color: #fff;
+}
+/* Тело узла: две строки вместо одной — шаг сценария должен быть читаем на холсте. */
+.node-body {
+  padding: 10px 12px; color: var(--text-dim); max-width: 240px; font-size: var(--fs-sm);
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+}
+
+/* ---------- порты веток ---------- */
+
+/* Каждая ветка — свой источник связи справа от узла: у кнопки это её имя, у
+   условия «да»/«нет». Раньше на все ветки был один кружок, и куда ведёт
+   конкретная кнопка, на холсте видно не было. */
+.node { position: relative; }
+.node-port {
+  display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+  padding: 2px 14px 2px 12px; position: relative; min-height: 24px;
+}
+.node-port-next {
+  position: absolute; right: 0; top: 50%; min-height: 0; padding: 0;
+  width: 1px; height: 1px; overflow: visible; transform: translateY(-50%);
+}
+.node-port-next .node-port-label { display: none; }
+.node-port-label {
+  font-size: 11px; color: var(--muted); max-width: 160px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* right: -6px — ровно половина диаметра (12px): кружок стоит точно на кромке
+   блока, а не утоплен в неё и не свисает наружу. */
+.node-port .react-flow__handle {
+  position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
+}
+.node-port-next .react-flow__handle { right: -6px; top: 0; }
+.node-port .react-flow__handle:hover { transform: translateY(-50%) scale(1.3); }
+
+/* Режим соединения кликом: источник подсвечен, кандидаты — пунктиром. */
+.node.linking { box-shadow: 0 0 0 2px var(--accent), 0 0 0 5px var(--accent-soft); }
+.node.link-target { border-style: dashed; cursor: crosshair; }
+.node.link-target:hover { box-shadow: 0 0 0 2px var(--accent); }
+
+/* Подсказка в режиме соединения кликом: видно, что холст ждёт выбора цели. */
+.connect-banner {
+  position: absolute; z-index: var(--z-canvas); left: 50%; transform: translateX(-50%);
+  bottom: 16px; display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px; font-size: 12px; color: var(--text-dim);
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 999px;
+  box-shadow: var(--shadow-pop);
+  animation: pop-in var(--t-mid);
+  transform-origin: bottom center;
+}
+/* Переопределение паддинга убрано: размер кнопки задаёт токен. */
+.connect-banner button { min-height: var(--btn-h-sm); padding: 0 var(--sp-2); font-size: var(--fs-sm); }
+
+.empty-canvas { display: flex; align-items: center; justify-content: center; height: 100%; pointer-events: none; }
+.empty-canvas-inner {
+  text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 28px 32px; border: 1px dashed var(--line); border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  animation: fade-in var(--t-mid);
+}
+.empty-canvas-inner h3 { font-size: 16px; }
+.empty-canvas-inner button { pointer-events: auto; }
+
+/* ---------- превью ---------- */
+
+.preview {
+  position: absolute; inset: 0; z-index: var(--z-canvas);
+  background: var(--bg-deep); display: flex; flex-direction: column;
+  border-left: 1px solid var(--line);
+  animation: fade-in var(--t-mid);
+}
+.preview.is-closing { animation: fade-out var(--t-exit) forwards; }
+.preview-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line);
+  font-size: var(--fs-base); font-weight: var(--fw-semibold);
+}
+/* Паддинг больше не переопределяем — высоту кнопки задаёт токен. */
+.preview-head .ghost { font-size: var(--fs-sm); }
+.preview-chat { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.bubble {
+  max-width: 80%; padding: var(--sp-2) var(--sp-3); border-radius: 12px; font-size: var(--fs-base); line-height: var(--lh-body);
+  animation: bubble-in var(--t-mid);
+}
+.bubble.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.bubble.user { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; }
+.preview-input { display: flex; gap: 8px; margin-top: 6px; }
+.preview-input input { flex: 1; }
+.preview-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.preview-buttons button { background: var(--panel-2); }
+.preview-done { text-align: center; margin-top: 8px; }
+
+/* ---------- контекстное меню блока ---------- */
+
+.ctx-menu {
+  position: fixed; z-index: var(--z-popover); min-width: 220px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 6px;
+  box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column; gap: 2px;
+  animation: pop-in var(--t-mid);
+}
+.ctx-menu.is-closing { animation: surface-out var(--t-exit) forwards; }
+.ctx-menu button {
+  background: transparent; border-color: transparent; text-align: left;
+  padding: var(--sp-2) 9px; font-size: var(--fs-md); justify-content: flex-start; min-height: var(--btn-h-sm);
+}
+.ctx-menu button:hover:not(:disabled) { background: var(--panel-2); border-color: var(--line); }
+.ctx-menu .ctx-title {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 9px 8px; font-size: var(--fs-sm); font-weight: var(--fw-medium);
+  border-bottom: 1px solid var(--line); margin-bottom: 4px;
+}
+.ctx-menu .ctx-title .muted { font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctx-menu .ctx-danger { color: var(--danger); }
+.ctx-menu .ctx-danger:hover { background: var(--danger-soft); border-color: var(--danger); }
+
+/* ---------- модалки (гайды, шаблоны) ---------- */
+
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  background: var(--scrim); display: flex; align-items: center; justify-content: center; padding: var(--sp-6);
+  /* Затемнение читается как «стекло», а не как чёрная заливка. */
+  backdrop-filter: blur(2px);
+  animation: fade-in var(--t-modal);
+}
+.modal-backdrop.is-closing { animation: fade-out var(--t-exit) forwards; }
+.modal {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
+  width: 100%; max-width: 720px; max-height: 84vh; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-pop);
+  /* Ступенчатый вход: затемнение первым, панель на 50ms позже — один жест. */
+  animation: pop-in var(--t-modal) 50ms both;
+}
+.modal.is-closing { animation: surface-out var(--t-exit) forwards; }
+.modal.guide { max-width: 820px; }
+.modal.settings { width: 520px; }
+.modal.shortcuts-modal { max-width: 460px; }
+.modal-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+/* Заголовок — 16px/600: раньше был на 3px больше тела и не читался как титул. */
+.modal-head h2, .modal-head h3 { font-size: var(--fs-lg); font-weight: var(--fw-semibold); line-height: var(--lh-tight); }
+.modal-head-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.modal-subtitle { margin: 0; font-size: var(--fs-sm); color: var(--muted); }
+/* Тело скроллится внутри, шапка и подвал закреплены. 20px между разделами. */
+.modal-body { padding: var(--sp-5) var(--sp-5); overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp-5); flex: 1 1 auto; }
+.modal-section { display: flex; flex-direction: column; gap: var(--sp-3); }
+.modal-section + .modal-section { padding-top: var(--sp-5); border-top: 1px solid var(--line-soft); }
+.modal-section-title { font-size: var(--fs-base); font-weight: var(--fw-semibold); color: var(--text); }
+/* Подвал закреплён: действия не уезжают при скролле длинного гайда. */
+.modal-foot {
+  padding: var(--sp-3) var(--sp-5); border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2);
+  flex: 0 0 auto; background: var(--panel);
+}
+
+.guide-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.guide-tabs button { background: transparent; }
+.guide-tabs button.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.guide-search { width: 100%; }
+.guide-search input { width: 100%; }
+.guide-section h2 { font-size: var(--fs-xl); font-weight: var(--fw-semibold); margin-bottom: var(--sp-1); }
+.guide-section h3 { font-size: var(--fs-lg); font-weight: var(--fw-semibold); margin: var(--sp-4) 0 var(--sp-2); color: var(--text); }
+/* h4 был тем же кеглем, что h3 (оба 14px) — лестница ломалась на середине. */
+.guide-section h4 { font-size: var(--fs-base); font-weight: var(--fw-semibold); margin-bottom: var(--sp-2); color: var(--text-dim); }
+.guide-section p { margin: 0 0 var(--sp-2); font-size: var(--fs-base); line-height: var(--lh-prose); color: var(--muted); }
+.glossary-group { margin-bottom: 10px; }
+.glossary-group h4 { font-size: 12px; margin: 8px 0 4px; color: var(--muted); }
+.glossary-group ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; }
+.guide-section ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; }
+.guide-steps { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; }
+.guide-steps li { margin-bottom: 4px; }
+.block-ref, .recipe, .faq-item {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 12px;
+  transition: border-color var(--t);
+}
+.recipe:hover, .faq-item:hover { border-color: var(--panel-3); }
+.block-ref-head { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.block-ref-item { display: flex; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+.block-ref-item .muted { flex: 1; }
+.callout {
+  background: var(--accent-soft); border: 1px solid var(--accent);
+  border-radius: var(--r-sm); padding: var(--sp-3); font-size: var(--fs-sm); line-height: var(--lh-prose);
+}
+.tpl-dropdown {
+  position: absolute; z-index: var(--z-popover); right: 0; top: 100%; margin-top: 6px; width: 260px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--shadow-pop); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+  animation: pop-in var(--t-mid);
+  /* Поповер растёт из своего триггера (правый верхний угол), а не из центра. */
+  transform-origin: top right;
+}
+.tpl-dropdown button { background: transparent; border-color: transparent; text-align: left; }
+.tpl-dropdown button:hover { background: var(--panel-2); border-color: var(--line); }
+
+/* ---------- статусы / пилюли ---------- */
+
+/* Псевдоним .badge: те же размеры, отступы и радиусы, что у единого бейджа.
+   Имена классов сохранены — их несут десятки мест в JSX. */
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: var(--fs-sm); font-weight: var(--fw-semibold); line-height: 1.5;
+  padding: 3px 9px; border-radius: 999px;
+  color: var(--muted); background: var(--panel-2);
+  border: 1px solid transparent; cursor: default; white-space: nowrap;
+}
+.pill.bad { background: var(--danger-soft); border-color: var(--danger); color: var(--danger-ink); }
+.pill.good { background: var(--ok-soft); border-color: var(--ok); color: var(--ok-ink); }
+.pill.warn { background: var(--warn-soft); border-color: var(--accent); color: var(--warn-ink); }
+button.pill { cursor: pointer; }
+button.pill.bad:hover { background: rgba(229, 72, 77, .22); }
+button.pill.warn:hover { background: rgba(224, 145, 58, .24); }
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: var(--fs-xs); font-weight: var(--fw-semibold); line-height: 1.5;
+  padding: 2px var(--sp-2); border-radius: 999px; white-space: nowrap;
+}
+.status-pill.good { background: var(--ok-soft); color: var(--ok-ink); }
+.status-pill.bad { background: var(--danger-soft); color: var(--danger-ink); }
+.status-pill.muted-badge { background: var(--panel-3); color: var(--muted); }
+
+/* ---------- карточка бота в дашборде ---------- */
+.bot-card-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.bot-card-row > * { min-width: 0; }
+.bot-card-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bot-card .open-arrow { font-size: 11px; color: var(--accent); opacity: 0; transition: opacity var(--t); }
+.bot-card:hover .open-arrow { opacity: 1; }
+.wh-err {
+  color: var(--danger-ink) !important; font-family: var(--mono); font-size: var(--fs-xs);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ---------- инспектор: id и точка входа ---------- */
+.inspector-id { font-size: 12px; margin: 2px 0 10px; }
+.inspector-id .mono { font-family: var(--mono); color: var(--text-dim); }
+.inspector-start {
+  width: 100%; margin: 4px 0 12px; background: var(--accent-soft); border-color: rgba(224,145,58,.4);
+  color: var(--accent);
+}
+.inspector-start:hover:not(:disabled) { background: rgba(224,145,58,.2); }
+
+/* ---------- инспектор: поля, чипсы, футер ---------- */
+
+/* Поля: 8px label→control (у label), 16px control→control (margin-bottom). */
+.insp-field { margin-bottom: var(--sp-4); }
+.text-format-tools { display: flex; gap: var(--sp-1); margin-top: var(--sp-1); }
+.text-format-tools button { min-width: 30px; min-height: 30px; padding: 3px 8px; font-weight: 700; }
+.insp-field label { display: block; margin: 0 0 var(--sp-2); }
+.insp-field .muted { margin-top: var(--sp-1); }
+.insp-note { margin: 2px 0 var(--sp-3); line-height: var(--lh-body); }
+.insp-current { margin-top: 6px; }
+
+/* Секции полей: 20px между группами + волосяной разделитель. Раньше инспектор
+   был одной бесконечной колонкой одинаковых полей — сканировать было нечего. */
+.insp-section { margin-bottom: var(--sp-5); padding-bottom: var(--sp-5); border-bottom: 1px solid var(--line-soft); }
+.insp-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.insp-section-title {
+  font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--muted);
+  margin: 0 0 var(--sp-3);
+}
+/* Опасная зона: своё место, никакой меди. */
+.insp-section.danger-zone { border-top: 1px solid var(--danger); padding-top: var(--sp-4); }
+
+/* Кнопки-переменные: клик вставляет {{var}} в позицию курсора. */
+.var-chips { margin-top: 6px; }
+.var-chips-title { display: block; font-size: 11px; }
+.var-chips-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.var-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px; font-size: 11px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text-dim);
+}
+.var-chip:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.var-chip em { font-style: normal; color: var(--muted); font-size: 10px; }
+.var-chips-empty { font-size: 11px; margin-top: 6px; line-height: 1.45; }
+
+/* Строка-фраза условия: [переменная] [оператор] [значение]. */
+.inline-row .eq { flex: 0 0 auto; font-size: 12px; color: var(--muted); }
+.chip-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.op-chip, .target-chip {
+  padding: 3px 10px; font-size: 11px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text-dim);
+}
+.op-chip:hover:not(:disabled), .target-chip:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.op-chip.active, .target-chip.active {
+  background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600;
+}
+
+/* Карточка кнопки: подпись, без технического «значения». */
+.btn-card {
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--bg-deep); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 8px 9px; margin-bottom: 7px;
+}
+.btn-card-hint { font-size: 11px; line-height: 1.35; }
+.media-item { flex-direction: column; align-items: stretch; gap: 6px; }
+
+/* Кнопка «?» — подсказка для новичка открывается поповером, а не занимает
+   место в потоке панели. */
+.help-btn {
+  margin-left: auto; width: 22px; height: 22px; padding: 0; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--muted); font-size: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.help-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.help-pop {
+  background: var(--accent-soft); border: 1px solid rgba(224,145,58,.35);
+  border-radius: var(--r-sm); padding: 9px 11px; margin-bottom: 12px;
+  font-size: 12px; line-height: 1.5; color: var(--text-dim);
+}
+.help-pop p { margin: 0 0 6px; }
+.help-pop p:last-child { margin-bottom: 0; }
+.help-pop b { color: var(--accent); font-weight: 600; }
+
+/* Служебное — одной приглушённой строкой внизу. */
+.insp-footer {
+  display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center;
+  margin-top: 16px; padding-top: 11px; border-top: 1px solid var(--line-soft);
+}
+.insp-footer .link {
+  background: none; border: none; padding: 0; font-size: 12px; color: var(--muted);
+  text-decoration: none; cursor: pointer;
+}
+.insp-footer .link:hover { color: var(--accent); text-decoration: underline; }
+.insp-footer .danger-link { color: #b0685f; margin-left: auto; }
+.insp-footer .danger-link:hover { color: var(--danger); }
+
+/* ---------- глоссарий ---------- */
+
+.term-wrap { position: relative; display: inline-block; }
+button.term {
+  background: none; border: none; padding: 0; font: inherit; color: inherit;
+  text-decoration: underline dotted; text-underline-offset: 2px; cursor: help;
+}
+button.term:hover { color: var(--accent); }
+.term-pop {
+  position: absolute; z-index: var(--z-popover); bottom: 100%; left: 0; margin-bottom: 6px;
+  width: min(300px, 70vw); display: block; text-align: left;
+  background: var(--panel); border: 1px solid var(--accent); border-radius: var(--r-sm);
+  padding: 8px 10px; font-size: 12px; line-height: 1.45; color: var(--text-dim);
+  box-shadow: var(--shadow-pop);
+  /* Растёт из подчёркнутого термина — снизу вверх. */
+  transform-origin: bottom left;
+}
+.term-pop b { color: var(--accent); font-weight: 600; }
+
+/* ---------- шпаргалка горячих клавиш ---------- */
+
+.modal.shortcuts-modal { max-width: 460px; }
+.shortcut-list { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--text-dim); }
+.guide-skill-head { margin-top: 18px; }
+
+/* ---------- профи: id и сырые параметры ---------- */
+
+.insp-advanced {
+  margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 10px;
+  font-size: 12px; color: var(--muted);
+}
+.insp-advanced summary { cursor: pointer; color: var(--muted); }
+.insp-advanced summary:hover { color: var(--accent); }
+.insp-advanced-row { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+.insp-advanced-row .mono { color: var(--text-dim); overflow-wrap: anywhere; }
+.insp-raw {
+  margin: 0; padding: 8px 9px; max-height: 220px; overflow: auto;
+  background: var(--bg-deep); border: 1px solid var(--line); border-radius: var(--r-sm);
+  font-size: 11px; line-height: 1.45; white-space: pre-wrap;
+}
+
+/* «Блок включён» — обычный чекбокс, а не овальный переключатель:
+   состояние «вкл/выкл» читается однозначно. */
+.insp-check { align-items: flex-start; }
+.insp-check input[type="checkbox"] { margin-top: 2px; }
+.insp-check-text { display: flex; flex-direction: column; line-height: 1.35; }
+.insp-check-hint { font-size: 11px; }
+
+/* ---------- шаблоны (модалка) ---------- */
+.tpl-card {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; margin-bottom: 12px;
+  transition: border-color var(--t);
+}
+.tpl-card:hover { border-color: var(--panel-3); }
+.tpl-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; margin-bottom: 4px; }
+.tpl-card-head > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpl-card .muted { display: block; margin-bottom: 8px; line-height: 1.5; }
+
+/* ---------- модалка публикации ---------- */
+.publish-summary { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.issue-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.issue {
+  display: flex; gap: 10px; text-align: left; align-items: flex-start;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 11px;
+  transition: border-color var(--t), background var(--t), transform var(--t);
+}
+.issue:hover { border-color: var(--panel-3); background: var(--panel-3); transform: translateX(2px); }
+.issue-mark {
+  flex: 0 0 auto; width: 18px; height: 18px; border-radius: 999px; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px;
+}
+.issue.error { border-left: 3px solid var(--danger); }
+.issue.error .issue-mark { background: var(--danger-soft); color: #ff8a8e; }
+.issue.warn { border-left: 3px solid var(--accent); }
+.issue.warn .issue-mark { background: var(--accent-soft); color: #f0b270; }
+.issue-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.issue-block { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+.issue-msg { font-size: 13px; color: var(--text); }
+.issue .muted { font-size: 12px; }
+
+.steps { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; }
+.step {
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 11px;
+  animation: fade-in var(--t-mid);
+}
+.step-icon {
+  flex: 0 0 auto; width: 18px; height: 18px; border-radius: 999px; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700;
+}
+.step.ok .step-icon { background: rgba(70,167,88,.16); color: #7fd891; }
+.step.fail .step-icon { background: var(--danger-soft); color: #ff8a8e; }
+.step.skipped .step-icon { background: var(--panel-3); color: var(--muted); }
+.step-label { flex: 1; }
+.foot-left { margin-right: auto; }
+
+/* ---------- react-flow: подгон под нашу палитру ---------- */
+
+.react-flow__attribution { display: none; }
+.react-flow__handle {
+  width: 12px; height: 12px; background: var(--panel-3); border: 1px solid var(--line);
+  transition: background var(--t), border-color var(--t), transform var(--t);
+}
+/* Зона попадания хендла: визуально кружок 12px, но кликабельным держим
+   квадрат ≥ 24px — по хендлу легко промахнуться, особенно на тач-экране. */
+.react-flow__handle::after { content: ""; position: absolute; inset: -7px; }
+.react-flow__handle:hover { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+.react-flow__edge-path { stroke: #4a5468; stroke-width: 1.5; transition: stroke var(--t), stroke-width var(--t); }
+.react-flow__edge.selected .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
+.react-flow__connection-path { stroke: var(--accent); stroke-width: 2; }
+.react-flow__controls-button {
+  background: var(--panel); border-bottom: 1px solid var(--line); fill: var(--text-dim);
+  transition: background var(--t), fill var(--t);
+}
+.react-flow__controls-button:hover { background: var(--panel-2); fill: var(--text); }
+.react-flow__node.selected .node {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 6px 18px rgba(6, 9, 14, .4);
+}
+.react-flow__node { animation: node-in var(--t-mid); }
+
+/* ============================================================
+   Светлая тема: инверсия графита, медный акцент сохраняем
+   ============================================================ */
+
+html[data-theme="light"] {
+  --bg: #f4f5f7;
+  --bg-deep: #eaecef;
+  --panel: #ffffff;
+  --panel-2: #f5f6f9;
+  --panel-3: #e7eaf1;
+  --line: #d7dce5;
+  --line-soft: #e3e7ee;
+
+  --text: #171a21;
+  --text-dim: #39404f;
+  --muted: #68718a;
+
+  /* медь чуть темнее — чтобы держала контраст на светлом фоне */
+  --accent: #b06a1c;
+  --accent-2: #955714;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(176, 106, 28, .12);
+
+  --danger: #c32b30;
+  --danger-soft: rgba(195, 43, 48, .10);
+  --ok: #2c8440;
+
+  --shadow-pop: 0 14px 34px rgba(20, 26, 38, .16);
+  --shadow-1: 0 1px 2px rgba(20, 26, 38, .06);
+  --shadow-2: 0 6px 18px rgba(20, 26, 38, .10);
+}
+html[data-theme="light"] .react-flow__edge-path { stroke: #9aa4b6; }
+html[data-theme="light"] .react-flow__node { color: var(--text); }
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder { color: #9aa2b4; }
+
+/* ============================================================
+   Заморозка блока, конфликты, режим «сон»
+   ============================================================ */
+
+.node { transition: opacity var(--t-mid), filter var(--t-mid), box-shadow var(--t-mid), border-color var(--t-mid); }
+.node.frozen { border-style: dashed !important; opacity: .55; filter: grayscale(.6); }
+.node.has-conflict { border-color: var(--danger) !important; box-shadow: 0 0 0 1px var(--danger); }
+.node-conflict {
+  margin-left: auto; width: 16px; height: 16px; border-radius: 999px;
+  background: var(--danger); color: #fff; font-size: 11px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.node.sleeping { opacity: .2; filter: saturate(.35); }
+
+/* ============================================================
+   «Что если» — предсказание при протяжке связи
+   ============================================================ */
+
+.whatif {
+  position: absolute; z-index: var(--z-panel); top: 16px; right: 16px; max-width: 280px;
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--panel); border: 1px solid var(--accent); border-left: 3px solid var(--accent);
+  border-radius: var(--r-sm); padding: 8px 10px; font-size: 12px; line-height: 1.45;
+  box-shadow: var(--shadow-pop); pointer-events: none;
+  animation: pop-in var(--t-mid);
+}
+.whatif b { color: var(--accent); font-size: 11px; }
+
+/* ============================================================
+   «Объясни»
+   ============================================================ */
+
+.explain-pop {
+  position: fixed; z-index: var(--z-popover); width: 360px; max-height: 62vh; overflow: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 12px 14px; box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column; gap: 8px;
+  animation: pop-in var(--t-mid);
+}
+/* F3-303-orig: кламп под правый/нижний край окна — при окнах <1200px поповер
+   улетал за край и кнопка «Понятно» становилась некликабельной. */
+.explain-pop.clamped { left: auto !important; right: 16px; }
+.explain-pop.clamped-b { top: auto !important; bottom: 16px; }
+.explain-pop.is-closing { animation: surface-out var(--t-exit) forwards; }
+.explain-head { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+.explain-title { font-size: 12px; color: var(--muted); }
+.explain-line { display: flex; gap: 8px; font-size: 13px; line-height: 1.5; }
+.explain-num { flex: 0 0 auto; font-family: var(--mono); font-size: 11px; color: var(--accent); padding-top: 1px; }
+
+/* ============================================================
+   Настройки
+   ============================================================ */
+
+.modal.settings { width: 520px; }
+.set-group {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 0; border-bottom: 1px solid var(--line-soft);
+}
+.set-group:last-of-type { border-bottom: none; }
+.set-label { font-size: 12px; color: var(--muted); }
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; }
+.set-row-text { display: flex; flex-direction: column; }
+.set-row-text .muted { font-size: 12px; }
+
+/* Вложенный блок настроек (смена пароля, сессии) */
+.set-subgroup {
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+  padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 10px;
+  background: var(--panel-2);
+}
+.set-subgroup input { width: 100%; }
+.danger-zone { border-color: rgba(229, 72, 77, .45); }
+.delete-account-warning { color: var(--danger); font-size: 12px; line-height: 1.45; }
+
+/* Действия карточки бота: отдельный ряд под id, чтобы кнопки не вылезали за
+   узкую колонку сетки. Вид нейтральный у всех трёх; красный — только hover
+   у «Удалить», иначе все кнопки читаются как опасные. */
+.bot-card-actions {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2); width: 100%; margin-top: 6px;
+}
+.bot-card .bot-card-action {
+  padding: 2px 8px; font-size: 12px;
+  color: var(--muted); background: transparent; border: 1px solid var(--line-soft); border-radius: 8px;
+}
+.bot-card .bot-card-action:hover:not(:disabled) {
+  color: var(--accent); border-color: var(--accent); background: var(--accent-soft);
+}
+.bot-card .bot-card-action.danger:hover:not(:disabled) {
+  color: var(--danger); border-color: var(--danger); background: var(--danger-soft);
+}
+
+/* Карточка мини-аппа: та же сетка, что у ботов, но действия — «открыть» и
+   ссылка в Telegram. Ссылка — акцентная, без подчёркивания до hover. */
+.miniapp-card { cursor: pointer; }
+.miniapp-card-title { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.miniapp-card-icon { color: var(--muted); display: inline-flex; flex: 0 0 auto; }
+.miniapp-card:hover .miniapp-card-icon { color: var(--accent); }
+.miniapp-link {
+  display: inline-flex; align-items: center;
+  font-size: 12px; color: var(--accent); text-decoration: none;
+  border-bottom: 1px solid transparent; padding: 2px 0;
+}
+.miniapp-link:hover { border-bottom-color: var(--accent); }
+
+/* Переключатель-свитч (овал с бегунком). min-height: 0 обязателен: глобальное
+   button{min-height:var(--btn-h)} и мобильный оверрайд 44px иначе растягивают
+   овал в квадрат, и бегунок (top:50%) уезжает от центра. */
+.switch {
+  flex: 0 0 auto; width: 40px; height: 22px; min-height: 0; box-sizing: border-box;
+  padding: 0; border-radius: 999px;
+  background: var(--panel-3); border: 1px solid var(--line); position: relative;
+  transition: background var(--t), border-color var(--t), box-shadow var(--t);
+}
+.switch .switch-knob {
+  position: absolute; top: 50%; left: 2px; transform: translateY(-50%);
+  width: 16px; height: 16px; border-radius: 999px;
+  background: var(--text-dim); transition: transform var(--t), background var(--t);
+}
+.switch.on { background: var(--accent); border-color: var(--accent); }
+.switch.on .switch-knob { transform: translate(18px, -50%); background: var(--accent-ink); }
+/* Глобальное :focus-visible ставит кольцо с --r-sm — на овале это заметно;
+   здесь радиус кольца следует форме свитча. */
+.switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 999px; }
+.segmented {
+  display: inline-flex; background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden;
+}
+.segmented .seg {
+  border: none; border-radius: 0; background: transparent; padding: 6px 14px;
+  transition: background var(--t), color var(--t);
+}
+.segmented .seg.active { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+/* ============================================================
+   Каталог шаблонов
+   ============================================================ */
+
+.catalog { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+.catalog-body {
+  padding: 20px 24px 48px; display: flex; flex-direction: column; gap: 14px;
+  width: 100%; max-width: 1200px; margin: 0 auto;
+}
+.catalog-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.catalog-search { flex: 1; min-width: 240px; }
+.tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.tpl-card { align-self: start; }
+.tpl-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; line-height: 1.5; }
+.tpl-meta { font-size: 12px; margin-bottom: 8px; }
+.catalog-form { display: flex; flex-direction: column; gap: 8px; max-width: 520px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+button.tag { padding: 3px 9px; font-size: 12px; border-radius: 999px; }
+button.tag.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* ============================================================
+   Инструменты редактора: сохранение, поиск, переменные, логи, версии
+   ============================================================ */
+
+.save-state { font-size: 12px; color: var(--muted); white-space: nowrap; transition: color var(--t-mid); }
+.save-state.dirty { color: var(--accent); }
+
+.draft-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 14px; background: var(--accent-soft);
+  border-bottom: 1px solid var(--line); font-size: 13px; color: var(--text-dim);
+  animation: slide-down var(--t-panel);
+}
+.draft-bar button { padding: 4px 10px; font-size: 12px; }
+
+/* ---------- поиск по блокам ---------- */
+
+.search-panel {
+  position: absolute; top: 12px; left: 12px; z-index: var(--z-panel); width: 320px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 8px; display: flex; flex-direction: column; gap: 8px;
+  box-shadow: var(--shadow-pop);
+  animation: pop-in var(--t-panel);
+  transform-origin: top left;
+}
+.search-row { display: flex; gap: 8px; align-items: center; }
+.search-row input { flex: 1; min-width: 0; }
+.search-results { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow: auto; }
+.search-hit {
+  text-align: left; padding: 6px 8px; font-size: 13px; border-radius: var(--r-sm);
+  background: transparent; border: 1px solid transparent; color: var(--text-dim);
+}
+.search-hit:hover { background: var(--panel-2); border-color: var(--line); color: var(--text); }
+
+/* ---------- переменные ---------- */
+
+.vars-warn {
+  font-size: 13px; color: var(--danger); background: var(--danger-soft);
+  border: 1px solid var(--danger); border-radius: var(--r-sm); padding: 8px 10px; margin-bottom: 10px;
+}
+.vars-warn .mono { margin-left: 4px; }
+.var-row {
+  display: flex; gap: 12px; align-items: flex-start; padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.var-name { min-width: 120px; font-size: 13px; color: var(--accent); }
+.var-meta { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--text-dim); }
+.var-meta .muted { color: var(--muted); }
+.vars-foot { margin-top: 10px; font-size: 12px; }
+button.link {
+  background: none; border: none; padding: 0 6px 0 0; color: var(--text-dim);
+  font-size: 12px; text-decoration: underline; text-underline-offset: 2px;
+}
+button.link:hover { color: var(--accent); }
+
+/* ---------- события бота ---------- */
+
+.log-list { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; max-height: 420px; overflow: auto; }
+.log-row {
+  display: grid; grid-template-columns: 150px 110px 1fr; gap: 10px; align-items: center;
+  padding: 5px 8px; border-radius: var(--r-sm); font-size: 12px; background: var(--panel-2);
+  transition: background var(--t);
+}
+.log-row:hover { background: var(--panel-3); }
+.log-ts { color: var(--muted); }
+.log-user { color: var(--text-dim); }
+.log-event { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log-event.bad { color: var(--danger); }
+.log-event { min-width: 0; }
+.log-event-wrap { min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.log-raw { color: var(--muted); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- история версий ---------- */
+
+.ver-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px;
+}
+.ver-row button { padding: 4px 10px; font-size: 12px; }
+.ver-row .tag { margin-left: 6px; }
+.ver-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.danger-action { color: var(--danger); border-color: rgba(229,72,77,.45); background: var(--danger-soft); }
+.danger-action:hover:not(:disabled) { background: rgba(229,72,77,.22); border-color: var(--danger); }
+.stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.stats-grid > div { display: flex; flex-direction: column; gap: 4px; padding: 14px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r); }
+.stats-grid b { font-size: 24px; color: var(--accent); }
+.stats-grid span { color: var(--muted); font-size: 12px; }
+
+/* ---------- превью ---------- */
+
+.preview-badge { font-size: 11px; }
+.preview-vars {
+  padding: 6px 10px; border-top: 1px solid var(--line-soft);
+  font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ---------- подтверждение шаблона ---------- */
+
+.tpl-confirm p { font-size: 13px; color: var(--text-dim); line-height: 1.55; margin-bottom: 12px; }
+
+/* ============================================================
+   Поповеры в шапке: конфликты и «ещё»
+   ============================================================ */
+
+.pill-wrap { position: relative; display: inline-flex; }
+.conflict-pop {
+  position: fixed; z-index: var(--z-popover);
+  width: 320px; max-height: 340px; overflow: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--shadow-pop); padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  animation: pop-in var(--t-mid);
+}
+.conflict-pop.is-closing { animation: surface-out var(--t-exit) forwards; }
+.conflict-pop-head {
+  padding: 6px 9px 8px; font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--muted);
+  border-bottom: 1px solid var(--line); margin-bottom: 4px;
+}
+.conflict-item {
+  display: flex; align-items: flex-start; gap: 8px; text-align: left;
+  background: transparent; border-color: transparent; padding: 7px 9px; font-size: var(--fs-sm);
+  flex-wrap: wrap; min-height: var(--btn-h-sm); justify-content: flex-start;
+}
+.conflict-item svg { flex: 0 0 auto; color: var(--muted); }
+.conflict-item:hover svg { color: var(--accent); }
+.conflict-item:hover { background: var(--panel-2); border-color: var(--line); }
+.conflict-item .dot { margin-top: 5px; }
+.conflict-item-label { font-weight: var(--fw-semibold); color: var(--text); }
+.conflict-item .muted { flex: 1 1 100%; padding-left: 16px; }
+/* Меню «…» и «?» висит на своей кнопке, а не в потоке. Общий .conflict-pop
+   объявлен как position: fixed БЕЗ координат — такой элемент встаёт по своей
+   статической позиции, то есть правее триггера и за правым краем окна. Замер
+   до фикса: при окне 1440px меню шириной 217px имело right = 1616, в окне
+   оставалось 18% площади, ни один пункт не был кликабелен. Правый анкер
+   держит поповер внутри окна всегда: обвязка панели прижата к правому краю.
+   .conflict-pop у списка конфликтов правило не трогает — он рендерится
+   порталом в body и получает координаты из JS. */
+.more-pop {
+  width: 220px;
+  position: absolute; top: calc(100% + 6px); right: 0; left: auto;
+  transform-origin: top right;
+}
+.more-row { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.more-row:last-child { border-bottom: none; margin-bottom: 0; }
+.more-row button { text-align: left; background: transparent; border-color: transparent; justify-content: flex-start; min-height: var(--btn-h-sm); font-size: var(--fs-md); }
+.more-row button svg { flex: 0 0 auto; color: var(--muted); }
+.more-row button:hover svg { color: var(--accent); }
+.more-row button:hover { background: var(--panel-2); border-color: var(--line); }
+/* Кнопка «…» и «?» — квадраты одного размера с остальной обвязкой панели. */
+.more-btn { width: var(--btn-h-sm); height: var(--btn-h-sm); min-height: var(--btn-h-sm); padding: 0; }
+
+.inspector-help { margin: var(--sp-3) 0; border: 1px solid var(--accent); border-radius: var(--r-sm); background: var(--accent-soft); }
+.help-toggle { width: 100%; text-align: left; background: transparent; border: 0; color: var(--accent); font-weight: var(--fw-semibold); justify-content: flex-start; }
+.help-content { padding: 0 10px 8px; font-size: 12px; line-height: 1.45; color: var(--text-dim); }
+.help-content p { margin: 7px 0 0; }
+.guide-beginner-intro { padding: var(--sp-3); border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: var(--r-sm); }
+.beginner-item { padding-block: 9px; border-left-width: 3px; }
+
+/* ============================================================
+   Экран выбора уровня
+   ============================================================ */
+
+.skill-backdrop { z-index: var(--z-modal); }
+.skill-modal { max-width: 560px; }
+.skill-options { display: flex; flex-direction: column; gap: 10px; }
+.skill-option {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  text-align: left; padding: 14px 16px; border-radius: var(--r);
+  background: var(--panel-2); border: 1px solid var(--line);
+  transition: border-color var(--t), background var(--t), transform var(--t), box-shadow var(--t);
+}
+.skill-option:hover {
+  border-color: var(--accent); background: var(--panel-3);
+  transform: translateY(-1px); box-shadow: var(--shadow-2);
+}
+.skill-option-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.skill-option .muted { line-height: 1.5; }
+
+/* ============================================================
+   Онбординг-тур
+   ============================================================ */
+
+.tour { position: fixed; inset: 0; z-index: var(--z-tour); pointer-events: none; }
+/* «Прожектор» — FLIP: элемент фиксированного размера (100×100), который двигают
+   и масштабируют ТРАНСФОРМОМ, а не top/left/width/height. Раньше четыре свойства
+   заставляли браузер пересчитывать раскладку каждый кадр, а тень 9999px
+   перерисовывала весь вьюпорт — на больших переходах между шагами тур дёргался.
+   Здесь тень растеризуется один раз и дальше только трансформируется. */
+.tour-spot {
+  position: fixed; top: 0; left: 0; width: 100px; height: 100px;
+  transform-origin: top left;
+  border-radius: var(--r);
+  box-shadow: 0 0 0 9999px var(--scrim);
+  pointer-events: none;
+  will-change: transform;
+  transition: transform var(--t-panel);
+}
+/* Рамка подсветки — отдельный элемент: она приходит на целевой прямоугольник
+   сразу, без интерполяции размера, поэтому её штрих 2px не растягивается. */
+.tour-frame {
+  position: fixed; border-radius: var(--r);
+  box-shadow: 0 0 0 2px var(--accent) inset;
+  pointer-events: none;
+}
+.tour-dim { position: fixed; inset: 0; background: var(--scrim); pointer-events: none; }
+.tour-card {
+  position: fixed; z-index: var(--z-toast); pointer-events: auto; width: 340px; max-width: calc(100vw - 24px);
+  top: 0; left: 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop); padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 8px;
+  animation: pop-in var(--t-panel);
+  /* Следование за шагом — только transform. */
+  transition: transform var(--t-panel);
+}
+.tour-card h3 { font-size: var(--fs-lg); font-weight: var(--fw-semibold); }
+.tour-card p { margin: 0; font-size: var(--fs-base); line-height: var(--lh-prose); }
+.tour-step { font-size: var(--fs-xs); }
+.tour-actions { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+/* ============================================================
+   Анимации
+   ============================================================ */
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- хост выхода ---------- */
+
+/* Поверхности монтируются по условию, поэтому выхода у них не было. Хост
+   держит узел живым на время exit и добавляет `is-closing`; что именно гасить —
+   решают селекторы ниже. `display: contents` не создаёт бокс, раскладка не
+   меняется. */
+.exit-host { display: contents; }
+.exit-host.is-closing > * { animation: fade-out var(--t-exit) forwards; }
+/* Панель внутри затемнения уходит «мягко», затемнение — просто гаснет. */
+.exit-host.is-closing > * .modal { animation: surface-out var(--t-exit) forwards; }
+.exit-host.is-closing > * .modal-backdrop { animation: fade-out var(--t-exit) forwards; }
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(6px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+/* Выход поверхностей. Вход без выхода читался как рывок: узел исчезал за 0 мс.
+   Выход короче входа (~0.6×) и идёт той же кривой, но в обратную сторону —
+   enter-кейфрейм «наоборот» не переиспользуем, иначе панель уезжает не туда. */
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes surface-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(4px) scale(.99); }
+}
+/* Маленькие поверхности: без масштаба, ход 4px — им не нужен «взлёт» модалки. */
+@keyframes menu-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-2px); }
+}
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+/* Узлы не просто проявлялись — они «встают» на место: 4px подъёма. */
+@keyframes node-in {
+  from { opacity: 0; transform: translateY(4px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- данные бота: клиенты и таблицы ---------- */
+
+.data-page {
+  flex: 1; padding: 22px 18px 40px; max-width: 1080px; width: 100%; margin: 0 auto;
+  /* Вертикальный ритм страницы: gap между смысловыми блоками вместо
+     разнобоя собственных margin у детей (заголовок, подсказка, callout,
+     тулбар, карточки). */
+  display: flex; flex-direction: column; gap: var(--sp-3);
+}
+.data-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.data-head h2 { font-size: 17px; font-weight: 500; margin: 0; }
+.data-tabs { display: flex; gap: 4px; margin: 0; background: var(--bg-deep); padding: 4px; border-radius: var(--r-sm); width: fit-content; }
+.data-tabs button { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 12px; border-radius: var(--r-sm); cursor: pointer; font: inherit; transition: color var(--t), background var(--t); }
+.data-tabs button:hover { color: var(--text); }
+.data-tabs button.active { color: var(--text); background: var(--panel-2); border-color: var(--line); }
+.data-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.data-toolbar input { flex: 1 1 220px; max-width: 380px; }
+/* gap контейнера задаёт ритм — прямые дети собственные нижние отступы не
+   добавляют (иначе расстояние удваивается). Вложенные (тулбар внутри
+   .data-card) свои margin сохраняют: там gap контейнера не действует. */
+.data-page > .data-toolbar,
+.data-page > .data-card,
+.data-page > .data-grid { margin-bottom: 0; }
+/* Проза уровня страницы читается с проспективной высотой строки; глобальный
+   .muted остаётся компактным — он используется и в плотных UI-контекстах. */
+.data-page > .muted { line-height: var(--lh-prose); }
+/* Таблица — настоящая таблица внутри скролл-обёртки. `display: block` на самой
+   таблице ломал залипание заголовка, а `min-width: 760px` заставлял узкие
+   экраны ехать вбок. */
+.table-scroll {
+  width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--panel); -webkit-overflow-scrolling: touch;
+}
+.data-table { width: 100%; border-collapse: collapse; background: var(--panel); }
+.data-table th, .data-table td { overflow-wrap: anywhere; }
+/* Заголовок залипает: при длинной таблице не теряется, какой столбец где. */
+.data-table th {
+  text-align: left; font-weight: var(--fw-medium); font-size: var(--fs-sm);
+  color: var(--muted); padding: var(--sp-2) 10px; background: var(--panel-2);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+  position: sticky; top: 0; z-index: 1;
+}
+.data-table td { padding: var(--sp-2) 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; font-size: var(--fs-md); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+/* Числа и даты — по правому краю и с табличными цифрами: столбцы сравнимы глазом. */
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+/* Строка помечается полосой слева, а не заливкой на всю ширину: заливка
+   спорила с залипшим заголовком и мешала читать строку. */
+.data-table tbody tr { transition: box-shadow var(--t); }
+.data-table tbody tr:hover { box-shadow: inset 2px 0 0 var(--accent); }
+.data-vars { display: flex; flex-wrap: wrap; gap: 4px; }
+.data-var { background: var(--panel-3); border-radius: var(--r-sm); padding: 1px 6px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+.data-actions { display: flex; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+.data-empty { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; text-align: center; }
+.data-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; margin-bottom: 12px; }
+.data-card h3 { font-size: 14px; font-weight: 500; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+.data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.data-coll { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; cursor: pointer; transition: border-color var(--t), background var(--t); }
+.data-coll:hover { border-color: var(--text-dim); }
+.data-coll.active { border-color: var(--accent); background: var(--panel-2); }
+.data-coll-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.data-fields { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+
+/* ---------- узкие экраны ---------- */
+
+@media (max-width: 1180px) {
+  .constructor-top .bot-name { max-width: 140px; }
+  .constructor-top .status { display: none; }
+}
+
+/* Топбар дашборда переполняется уже на планшете: на 768px «Создать бота» и
+   «Выйти» уезжают за правый край (UX-01). Двухстрочная сетка включается с
+   900px — раньше она жила только в телефонном блоке 760px. */
+@media (max-width: 900px) {
+  .dashboard-topbar {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 54px 54px; column-gap: 8px; row-gap: 0;
+    height: 108px; padding: 0 12px;
+  }
+  .dashboard-topbar .brand { min-width: 0; overflow: hidden; }
+  .dashboard-topbar .brand span:last-child { overflow: hidden; text-overflow: ellipsis; }
+  .dashboard-topbar .who { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
+  .dashboard-topbar .spacer, .dashboard-topbar .topbar-sep { display: none; }
+  .dashboard-topbar .topbar-nav { grid-column: 1; grid-row: 2; min-width: 0; }
+  .dashboard-topbar .topbar-actions { grid-column: 2; grid-row: 2; justify-self: end; }
+  .dashboard-topbar .topbar-nav,
+  .dashboard-topbar .topbar-actions { gap: 6px; }
+  .dashboard-topbar .topbar-nav button,
+  .dashboard-topbar .topbar-actions button { padding-inline: 8px; }
+}
+
+@media (max-width: 760px) {
+  body { overflow-x: hidden; }
+  button { min-height: 44px; }
+  input, textarea, select { font-size: 16px; }
+
+  /* Свитч крупнее под палец, но овалом: глобальный button{min-height:44px}
+     сюда не применяется (min-height: 0), тач-зона растёт невидимым ::after. */
+  .switch { min-height: 0; width: 46px; height: 26px; }
+  .switch .switch-knob { width: 20px; height: 20px; }
+  .switch.on .switch-knob { transform: translate(22px, -50%); }
+  .switch::after { content: ''; position: absolute; inset: -9px; }
+
+  .app, .login-screen, .catalog { min-height: 100dvh; }
+  .constructor { height: 100dvh; }
+
+  .topbar { padding: 0 12px; overflow: visible; }
+  .data-topbar, .catalog-topbar { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; justify-content: flex-start; }
+  .data-topbar .data-brand, .catalog-topbar .brand { min-width: 0; flex: 0 1 auto; }
+  .data-topbar .who { flex: 0 1 30vw; }
+  /* UX-mob-01: nav (~300px) и actions (~303px) не влезают в одну строку даже
+     на 760px — кнопки перекрывали друг друга («Библиотека» и шестерёнка были
+     невидимы под «Создать бота»). Три строки: brand+who / nav / actions. */
+  .dashboard-topbar {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto; row-gap: 6px;
+    height: auto; padding: 8px 12px;
+  }
+  .dashboard-topbar .brand { grid-column: 1; grid-row: 1; min-width: 0; overflow: hidden; }
+  .dashboard-topbar .brand span:last-child { overflow: hidden; text-overflow: ellipsis; }
+  .dashboard-topbar .who { grid-column: 2; grid-row: 1; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
+  .dashboard-topbar .spacer, .dashboard-topbar .topbar-sep { display: none; }
+  .dashboard-topbar .topbar-nav { grid-column: 1 / -1; grid-row: 2; min-width: 0; flex-wrap: wrap; }
+  .dashboard-topbar .topbar-actions { grid-column: 1 / -1; grid-row: 3; justify-self: start; flex-wrap: wrap; }
+  .dashboard-topbar .topbar-nav,
+  .dashboard-topbar .topbar-actions { gap: 6px; }
+  .dashboard-topbar .topbar-nav button,
+  .dashboard-topbar .topbar-actions button { padding-inline: 8px; }
+  .dashboard-topbar .topbar-nav button:first-child { font-size: 0; }
+  .dashboard-topbar .topbar-nav button:first-child::after { content: "Каталог"; font-size: 13px; }
+  html[lang="en"] .dashboard-topbar .topbar-nav button:first-child::after { content: "Catalog"; }
+  .dashboard-topbar .topbar-nav button[title]:last-child { display: none; }
+  .dashboard-topbar .topbar-actions .ghost { font-size: 0; min-width: 44px; }
+  .dashboard-topbar .topbar-actions .ghost::after { content: "↪"; font-size: 18px; }
+  .topbar-sep { display: none; }
+
+  .dashboard { padding: 18px 12px calc(32px + env(safe-area-inset-bottom)); }
+  .empty-dash { padding: 36px 0; }
+  .empty-dash-cta { width: 100%; max-width: 320px; margin-top: 16px; }
+
+  .modal-backdrop {
+    align-items: flex-start; overflow-y: auto; padding: 12px;
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .modal { max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+  .modal.settings { width: 100%; }
+  .modal-head { padding: 12px 14px; }
+  .modal-body { padding: 14px; }
+  .modal-foot { padding: 10px 14px; flex-wrap: wrap; }
+
+  .catalog > .topbar { height: auto; min-height: 54px; flex-wrap: wrap; padding-block: 5px; }
+  .catalog > .topbar .brand { display: none; }
+  .catalog-body, .data-page { padding: 18px 12px calc(32px + env(safe-area-inset-bottom)); }
+  .catalog-search { min-width: 100%; }
+  .tpl-grid, .data-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .data-table {
+    display: block; max-width: 100%; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Состояние сохранения не прячем даже на телефоне: если автор не видит,
+     сохранён ли сценарий, свёрнутая панель превращается в ловушку (F10). */
+  .bar-row { position: static; box-shadow: none; padding: 9px 12px; }
+  .bar-row .topbar-group { flex-wrap: wrap; gap: 6px; }
+  .bar-row .topbar-group button { padding-inline: 8px; font-size: 13px; }
+  .bar-strip { padding: 0 12px; }
+  .bar-strip .bot-name { max-width: 100px; }
+  .workspace { position: relative; }
+  .palette { width: 112px; padding: 8px; }
+  .palette-item {
+    min-height: 44px; padding: 7px 6px 7px 10px;
+    /* На узком экране имена блоков сливаются: цветная точка не помещается.
+       Акцентная полоска слева даёт тип блока без чтения подписи. */
+    position: relative;
+    border-left: 3px solid var(--block-color, var(--line));
+    border-radius: var(--r-sm);
+  }
+  .palette-item .dot { display: none; }
+  .palette-item-text { font-weight: 500; }
+  .inspector {
+    position: absolute; z-index: 20; right: 0; bottom: 0;
+    width: min(100%, 380px); max-height: 58%;
+    border-top: 1px solid var(--line); box-shadow: var(--shadow-pop);
+    /* Плавающая кнопка поддержки (44px + отступ 12px) висит над низом
+       инспектора — добавляем запас, чтобы последние поля были доступны. */
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+  /* Zoom-контролы react-flow по умолчанию висят слева внизу — ровно там, где
+     на мобильном раскрывается инспектор (UX-mob-02). Переносим их в правый
+     верх холста, где они не перекрываются ни инспектором, ни палитрой. */
+  .react-flow__controls { top: 12px; right: 12px; left: auto; bottom: auto; }
+  .search-panel {
+    position: fixed; top: 64px; left: 12px; right: 12px;
+    width: auto; max-height: calc(100dvh - 76px); overflow-y: auto;
+  }
+  .conflict-pop {
+    width: auto; max-width: calc(100vw - 24px); max-height: 60dvh;
+  }
+  .ctx-menu, .explain-pop {
+    left: 12px !important; right: 12px; top: auto !important;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: auto; max-height: 70dvh; overflow-y: auto;
+  }
+  .log-row { grid-template-columns: 1fr auto; gap: 4px 10px; padding-block: 8px; }
+  .log-event { grid-column: 1 / -1; white-space: normal; }
+  .ver-row { flex-direction: column; align-items: flex-start; }
+  .tour-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .dashboard-topbar .brand span:last-child { display: none; }
+  .dashboard-topbar .who { max-width: calc(100vw - 72px); }
+}
+
+@media (max-width: 390px) {
+  .dashboard-topbar .topbar-nav button { padding-inline: 8px; }
+  .dashboard-topbar .topbar-actions .ghost { font-size: 0; min-width: 44px; padding-inline: 8px; }
+  .dashboard-topbar .topbar-actions .ghost::after { content: "↪"; font-size: 18px; }
+}
+
+/* ---------- доступность ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .tour-spot, .tour-card { transition: none !important; }
+  /* Новые выходы тоже гасим: движение — не украшение, а сигнал, и без него
+     интерфейс обязан оставаться корректным. */
+  .is-closing, .modal-backdrop.is-closing, .preview.is-closing { animation: none !important; }
+}
+
+/* ============ редактор мини-аппов (фаза B) ============ */
+.mini-editor { height: 100vh; display: flex; flex-direction: column; min-height: 0; }
+.mini-editor-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.mini-left { width: 232px; border-right: 1px solid var(--line); background: var(--panel); overflow-y: auto; padding-bottom: 24px; }
+.mini-right { width: 296px; border-left: 1px solid var(--line); background: var(--panel); overflow-y: auto; }
+.mini-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; overflow: auto; background: var(--bg-deep); padding: 18px 0; }
+.mini-pal-title { padding: 12px 14px 6px; font-size: 11px; color: var(--muted); font-weight: 600; }
+.mini-page-row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 14px; background: none; border: none; border-left: 3px solid transparent; color: var(--text-dim); font-size: 13px; cursor: pointer; text-align: left; }
+.mini-page-row.on { border-left-color: var(--accent); background: var(--accent-soft); color: var(--text); font-weight: 600; }
+.mini-check { display: flex; gap: 8px; align-items: center; padding: 4px 14px; font-size: 13px; color: var(--text-dim); }
+.mini-group { padding: 2px 10px 8px; }
+.mini-group-title { font-size: 11px; color: var(--muted); padding: 6px 4px 4px; }
+.mini-pal { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mini-pal-item { display: flex; align-items: center; gap: 6px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 8px 8px; font-size: 11.5px; color: var(--text-dim); cursor: grab; user-select: none; }
+.mini-pal-item:hover { border-color: var(--accent); }
+.mini-pal-item .dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+.mini-phone { width: 390px; height: 844px; background: #fff; border-radius: 40px; position: relative; overflow: hidden; flex-shrink: 0;
+  /* рамка через box-shadow, НЕ border: при box-sizing:border-box border съедал
+     18px и холст был 372 вместо 390 — snap-линии и координаты расходились с
+     видимым экраном. box-shadow не влияет на layout, холст ровно 390x844. */
+  box-shadow: 0 0 0 9px #0b0b0d, 0 30px 80px rgba(0,0,0,.6); }
+.mini-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 110px; height: 24px; background: #0b0b0d; border-radius: 12px; z-index: 60; }
+.mini-screen { position: absolute; inset: 0; overflow: hidden; }
+/* сетка холста 10x10 (ячейка 39px) — визуальная опора для расстановки;
+   скрыта в превью */
+.mini-screen::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,.05) 1px, transparent 1px);
+  background-size: 39px 39px; }
+.mini-phone.preview .mini-screen::before { display: none; }
+.mini-screen[data-over='1'] { outline: 3px dashed var(--accent); outline-offset: -6px; }
+.mini-snap-v { position: absolute; top: 0; bottom: 0; width: 1px; background: #ff4d6a; z-index: 70; pointer-events: none; }
+.mini-snap-h { position: absolute; left: 0; right: 0; height: 1px; background: #ff4d6a; z-index: 70; pointer-events: none; }
+.mini-el { position: absolute; cursor: move; user-select: none; }
+.mini-el.sel { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* элемент, который сейчас тащат: приподнят и полупрозрачен — видно, ЧТО тащишь */
+.mini-el.dragging { opacity: .55; outline: 2px dashed var(--accent); outline-offset: 1px; z-index: 40; cursor: grabbing; }
+/* ghost — копия того, что тащим из палитры; fixed, следует за курсором */
+.mini-ghost { position: fixed; z-index: 999; pointer-events: none; opacity: .85; padding: 8px 14px;
+  background: var(--accent); color: var(--accent-ink); border-radius: 8px; font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3); white-space: nowrap; }
+/* чекбокс-строка в меню «…»: курсор обычный, клики ловит input */
+.mini-pop-check { cursor: default; }
+.mini-el-hint { position: absolute; top: -18px; left: 0; font-size: 10px; background: var(--accent); color: var(--accent-ink); padding: 1px 6px; border-radius: 4px; white-space: nowrap; z-index: 5; }
+.mini-el-rh { position: absolute; right: -6px; bottom: -6px; width: 13px; height: 13px; background: #fff; border: 2px solid var(--accent); border-radius: 4px; cursor: nwse-resize; z-index: 5; }
+.mini-tabbar-mock { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; background: rgba(255,255,255,.95); border-top: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-around; font-size: 11px; color: #555; z-index: 55; }
+.mini-phone.preview .mini-el { cursor: pointer; }
+.mini-insp-sec { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.mini-insp-sec h4 { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.mini-frow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.mini-frow label { width: 84px; font-size: 12px; color: var(--text-dim); flex-shrink: 0; }
+.mini-frow input, .mini-frow select, .mini-frow textarea { flex: 1; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 6px 8px; font-size: 12.5px; }
+.mini-frow input[type='color'] { width: 34px; height: 28px; padding: 2px; cursor: pointer; }
+
+/* ---------- мини-редактор на телефоне (UX-mob-03) ----------
+   Трёхколоночная раскладка (232 + холст + 296) не влезает в 390px: холст
+   телефона оказывался невидим, а палитра и инспектор делили экран.
+   Переходим на вертикаль: палитра сверху (горизонтальный скролл), холст
+   масштабируется под ширину экрана (координаты пересчитываются через
+   scale = width / MINI_CANVAS_W, поэтому drag/resize не ломаются),
+   инспектор — снизу. */
+@media (max-width: 760px) {
+  .mini-editor { height: 100dvh; }
+  .mini-editor-body { flex-direction: column; overflow: hidden; }
+
+  .mini-left {
+    width: 100%; border-right: none; border-bottom: 1px solid var(--line);
+    display: flex; flex-direction: row; align-items: center;
+    overflow-x: auto; overflow-y: hidden; padding-bottom: 8px;
+    flex: 0 0 auto; max-height: 132px;
+  }
+  .mini-left .mini-pal-title { writing-mode: horizontal-tb; padding: 8px 10px 4px; flex-shrink: 0; align-self: flex-start; }
+  .mini-left .mini-page-row { flex-shrink: 0; width: auto; align-self: center; border-left: none; border-bottom: 3px solid transparent; padding: 6px 10px; }
+  .mini-left .mini-page-row.on { border-bottom-color: var(--accent); border-left-color: transparent; }
+  .mini-left .mini-group { flex-shrink: 0; padding: 2px 8px 8px; align-self: flex-start; }
+  .mini-left .mini-pal { grid-template-columns: 1fr; }
+  .mini-left .mini-pal-item { white-space: nowrap; }
+  .mini-left .mini-check { flex-shrink: 0; align-self: center; }
+  .mini-left > .ghost { flex-shrink: 0; align-self: center; }
+
+  .mini-center { flex: 1; min-height: 0; padding: 10px 0; justify-content: flex-start; }
+  /* Масштаб под экран: 390px вьюпорт -> телефон ~340px (с отступами),
+     360px -> ~320px. Высота пропорциональна, чтобы не искажать пропорции. */
+  .mini-phone {
+    width: min(340px, calc(100vw - 40px));
+    height: calc(min(340px, calc(100vw - 40px)) * 844 / 390);
+    border-radius: 28px;
+    box-shadow: 0 0 0 6px #0b0b0d, 0 16px 48px rgba(0,0,0,.5);
+  }
+  .mini-notch { width: 80px; height: 18px; top: 8px; }
+
+  .mini-right {
+    width: 100%; border-left: none; border-top: 1px solid var(--line);
+    flex: 0 0 auto; max-height: 42dvh; overflow-y: auto;
+  }
+  .mini-frow { flex-direction: column; align-items: stretch; gap: 4px; }
+  .mini-frow label { width: auto; }
+}

@@ -1,0 +1,22 @@
+# Заголовки Pages-деплоя. Токен сессии живёт в sessionStorage, поэтому
+# страницу нельзя разрешать встраивать в iframe и нельзя пускать чужие скрипты.
+#
+# ВАЖНО: connect-src должен содержать и фронт, и воркер API (VITE_API_BASE),
+# иначе превью и сохранение сценария перестанут работать.
+
+/*
+  # connect-src должен содержать origin воркера API (VITE_API_BASE).
+  # Подставь свой: https://your-worker-name.your-account.workers.dev
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.telegram.org; font-src 'self' data:; connect-src 'self' https://your-worker-name.your-account.workers.dev https://api.telegram.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# Файлы в /assets/ контент-хешированные (имя меняется при любом изменении),
+# поэтому кэшируем их навечно: повторные визиты не делают ни одного запроса.
+# Блок ниже /* переопределяет Cache-Control только для /assets/*.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

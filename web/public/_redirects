@@ -1,0 +1,3 @@
+# Existing static files (robots.txt, assets) are served directly by Pages.
+# Unknown SPA routes fall back to the app shell.
+/* /index.html 200

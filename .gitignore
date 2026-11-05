@@ -1,0 +1,59 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+*.log
+.DS_Store
+
+# Temporary artefacts (screenshots, debug scripts, bundles)
+tmp/
+worker/tmp/
+# Чужие chrome-профили botlab-fix (173 МБ) — не часть проекта, не коммитить.
+tools/botlab-fix/
+# Старая сборка, переименованная вместо удаления (среда блокирует rm -rf на dist)
+dist_old_*/
+
+# Old pre-git snapshot — keep on disk until git history is deep enough, never track it.
+_backup_*/
+
+# Secrets never live inside the repo.
+*.dev.vars
+.env
+.env.local
+.env.*.local
+secrets/
+*.pem
+*.key
+
+# web/.env.production: реальный адрес воркера владельца — остаётся на диске.
+# Публичный шаблон — web/.env.production.example.
+web/.env.production
+
+# Local frontend env (may hold secrets / per-deploy values). Only the .example is tracked.
+web/.env
+web/env.txt
+
+# Keep shared Serena project metadata; ignore generated local state.
+# (Private: .serena остаётся на диске, в git не публикуется.)
+.serena/
+
+# F3-501: рабочие планы сессий и память агентов — не история репо.
+.planning/
+.workbuddy-ai/
+
+# Внутренние рабочие документы (остаются на диске, не публикуются).
+AGENTS.md
+AUDIT_PROMPT_FULL_2026-10-30.md
+docs/history/
+prototypes/
+docs/AUDIT-*.md
+docs/AUDIT-*.json
+docs/AUDIT-TASKS-*.md
+docs/MINIAPPS_PLAN.md
+docs/PROMPT_*.md
+docs/UX_AUDIT_HANDOFF.md
+
+# Реальный конфиг деплоя с приватными id — остаётся только на диске владельца.
+# Публичный шаблон — wrangler.example.toml (скопировать в wrangler.toml).
+worker/wrangler.toml
+

@@ -1,0 +1,314 @@
+/* ============================================================
+   Страница «Оплата» (PaymentsPage) — подключения провайдеров
+   владельца. Только var() токены дизайн-системы (styles.css),
+   чтобы обе темы работали без переопределений. Mobile-first:
+   при 360px формы в одну колонку, webhook URL — mono с переносом.
+   ============================================================ */
+
+.pay-page {
+  flex: 1;
+  padding: 22px 18px 40px;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  /* Вертикальный ритм страницы: gap между блоками вместо собственных
+     margin у каждого ребёнка (иначе отступы удваиваются). */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.pay-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  /* ритм задаёт gap контейнера .pay-page */
+  margin-bottom: 0;
+}
+
+.pay-head h2 {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-medium);
+  margin: 0;
+}
+
+.pay-principle {
+  margin-bottom: 0;
+}
+
+.pay-toolbar {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+/* Прямой ребён страницы: ритм задаёт gap контейнера, отступ убираем.
+   Вложенный (в .pay-empty) свой margin сохраняет. */
+.pay-page > .pay-toolbar {
+  margin-bottom: 0;
+}
+
+/* ---- карточка подключения ---- */
+
+.pay-conn {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: var(--sp-4);
+  margin-bottom: 0;
+}
+
+.pay-conn-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+}
+
+.pay-conn-head h3 {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  margin: 0;
+}
+
+.pay-conn-head .spacer {
+  flex: 1;
+}
+
+.pay-conn-actions {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* webhook URL: машинные данные — mono, перенос по границам слова,
+   чтобы длинный непрозрачный путь не ломал узкую колонку. */
+.pay-webhook {
+  margin: var(--sp-2) 0;
+}
+
+.pay-webhook-url {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2) var(--sp-3);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.pay-webhook-url span {
+  flex: 1;
+  min-width: 0;
+}
+
+.pay-copied {
+  color: var(--ok-ink);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+/* ---- секреты ---- */
+
+.pay-secrets {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin: var(--sp-2) 0;
+}
+
+.pay-secrets .field-label {
+  margin: 0;
+}
+
+/* ---- встроенное подтверждение удаления ---- */
+
+.pay-confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--danger);
+  border-radius: var(--r-sm);
+  background: var(--danger-soft);
+}
+
+.pay-confirm p {
+  flex: 1;
+  min-width: 200px;
+  margin: 0;
+  color: var(--danger-ink);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+/* ---- форма (добавление / замена секретов) ---- */
+
+.pay-form {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+
+/* Форма добавления — прямой ребён .pay-page: ритм задаёт gap контейнера.
+   Форма замены вложена в .pay-conn, её margin-bottom сохранён выше. */
+.pay-page > .pay-form {
+  margin-bottom: 0;
+}
+
+.pay-form h3 {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  margin: 0 0 var(--sp-3);
+}
+
+.pay-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.pay-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+/* подсказка «где взять значение» — часть поля, не отдельный блок */
+.pay-help {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+/* предупреждение про адрес в кабинете провайдера — акцентный цвет темы,
+   а не --warn-ink: в светлой теме он не переопределён и был бы блёклым */
+.pay-help.warn { color: var(--accent); }
+
+.pay-form-actions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+/* ---- пустое состояние ---- */
+
+.pay-empty {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: var(--sp-6);
+  text-align: center;
+}
+
+.pay-empty h3 {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-medium);
+  margin: 0 0 var(--sp-2);
+}
+
+.pay-empty p {
+  max-width: 560px;
+  margin: 0 auto var(--sp-4);
+  line-height: var(--lh-prose);
+}
+
+/* ---- результат проверки ---- */
+
+.pay-check-result {
+  margin-top: var(--sp-2);
+}
+
+/* Живая проверка пройдена: зелёный callout (модификатор базового .callout).
+   Текст — var(--text), а не --ok-ink: светлая тема не переопределяет
+   ok-ink, и светло-зелёный на белом не читается. */
+.callout.pay-check-result.ok {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+  color: var(--text);
+}
+
+/* Только формат: нейтральный callout — обещать «проверено» нельзя. */
+.callout.pay-check-result.neutral {
+  border-color: var(--line);
+  background: var(--panel-2);
+  color: var(--text-dim);
+}
+
+.pay-check-result ul {
+  margin: var(--sp-1) 0 0;
+  padding-left: var(--sp-5);
+}
+
+.pay-check-result li {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+/* Список замечаний провайдера может быть длинным: скролл внутри блока и
+   tabIndex=0, чтобы его можно было прокрутить с клавиатуры. */
+.pay-check-problems {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pay-check-problems:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* «Тестовый режим»: каркас .checkline, но внутри не чекбокс, а свитч.
+   Обёртка — div, клик по тексту ничего не переключает: курсор обычный,
+   текст и свитч разведены по краям ячейки формы. */
+.checkline.toggle-line {
+  cursor: default;
+  justify-content: space-between;
+}
+
+/* ---- поле с замечанием проверки ---- */
+
+.pay-field input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.pay-field-error {
+  color: var(--danger);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-body);
+}
+
+/* ---- 360px и уже: одна колонка ---- */
+
+@media (max-width: 640px) {
+  .pay-page {
+    padding: 18px 12px calc(32px + env(safe-area-inset-bottom));
+  }
+
+  .pay-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .pay-conn-actions {
+    width: 100%;
+  }
+
+  /* Свитч — фиксированная пилюля: растягивать его на всю ширину нельзя. */
+  .pay-conn-actions button:not(.switch) {
+    flex: 1;
+  }
+}

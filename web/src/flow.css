@@ -1,0 +1,38 @@
+/* Переопределения react-flow под нашу палитру. Живут рядом с ленивым чанком
+   конструктора (импортируются в Constructor.tsx ПОСЛЕ @xyflow/react/dist/style.css):
+   при равной специфичности решает порядок, и этот файл вставляется позже базы.
+   Правила с более высокой специфичностью (.canvas .react-flow, html[data-theme] …)
+   остались в styles.css — им порядок не важен. */
+
+.react-flow__attribution { display: none; }
+.react-flow__handle {
+  width: 12px; height: 12px; background: var(--panel-3); border: 1px solid var(--line);
+  transition: background var(--t), border-color var(--t), transform var(--t);
+}
+/* Зона попадания хендла: визуально кружок 12px, но кликабельным держим
+   квадрат ≥ 24px — по хендлу легко промахнуться, особенно на тач-экране. */
+.react-flow__handle::after { content: ""; position: absolute; inset: -7px; }
+.react-flow__handle:hover { background: var(--accent); border-color: var(--accent); transform: scale(1.25); }
+.react-flow__edge-path { stroke: #4a5468; stroke-width: 1.5; transition: stroke var(--t), stroke-width var(--t); }
+.react-flow__edge.selected .react-flow__edge-path { stroke: var(--accent); stroke-width: 2; }
+.react-flow__connection-path { stroke: var(--accent); stroke-width: 2; }
+.react-flow__controls-button {
+  background: var(--panel); border-bottom: 1px solid var(--line); fill: var(--text-dim);
+  transition: background var(--t), fill var(--t);
+}
+.react-flow__controls-button:hover { background: var(--panel-2); fill: var(--text); }
+.react-flow__node.selected .node {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 6px 18px rgba(6, 9, 14, .4);
+}
+.react-flow__node { animation: node-in var(--t-mid); }
+.react-flow__pane { cursor: grab; }
+.react-flow__pane.dragging { cursor: grabbing; }
+.react-flow__node.dragging { cursor: grabbing; }
+.react-flow__viewport { transform-origin: 0 0; }
+
+@media (max-width: 760px) {
+  /* На тач-экране зона попадания хендла ещё шире (переехало из styles.css:
+     flow.css грузится позже, иначе это правило перебивалось бы базовым). */
+  .react-flow__handle::after { content: ""; position: absolute; inset: -12px; }
+}

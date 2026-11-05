@@ -1,0 +1,35 @@
+/* Стили инспектора новых блоков (Промпт 2, TASK INSPECTOR).
+   Только дополнения к styles.css: переменные тем (--*) общие, поэтому
+   тёмная и светлая темы работают без правок. Никаких фиксированных ширин —
+   панель обязана жить и на 360px. */
+
+/* Инлайн-замечание валидатора рядом с полем. */
+.insp-issue {
+  display: flex; flex-direction: column; gap: 2px;
+  margin: var(--sp-1) 0 var(--sp-2);
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm); line-height: var(--lh-prose);
+  background: var(--warn-soft); border: 1px solid var(--accent); color: var(--text);
+}
+.insp-issue.error { background: var(--danger-soft); border-color: var(--danger); color: var(--danger-ink); }
+.insp-issue-code { font-family: var(--mono); font-size: 10px; opacity: 0.65; }
+
+/* Строка динамического списка (варианты опроса, random_text) на узкой панели:
+   число-поле сжимается, кнопки не переносятся. */
+.insp-list-row { display: flex; align-items: center; gap: 8px; }
+.insp-list-row > input[type="text"], .insp-list-row > input:not([type]) { flex: 1 1 auto; min-width: 0; }
+.insp-list-row > input[type="number"] { flex: 0 1 72px; min-width: 48px; }
+
+/* Заголовок списка со счётчиком: «Варианты ответа 3/10». */
+.insp-list-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.insp-list-count { font-size: var(--fs-sm); color: var(--muted); white-space: nowrap; }
+
+/* Редактор условий (conditions[] / segmentWhere): строка — три контрола,
+   на 360px складываются в две линии. */
+.insp-cond-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: var(--sp-2); }
+.insp-cond-row > select, .insp-cond-row > input { flex: 1 1 90px; min-width: 0; }
+.insp-cond-row > .ghost.icon-btn { flex: 0 0 auto; }
+
+/* Пустое состояние платежей в инспекторе. */
+.insp-pay-empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); }

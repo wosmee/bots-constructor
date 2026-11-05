@@ -1,0 +1,19 @@
+{
+  "name": "bots-constructor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "npm --prefix worker run typecheck && npm --prefix web run typecheck"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {}
+}

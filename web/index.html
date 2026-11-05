@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Визуальный конструктор Telegram-ботов: собирайте сценарии из блоков, проверяйте прогоном и публикуйте в один клик." />
+    <!-- Плейсхолдер: относительный "/" ломает vite build (EISDIR) — vite
+         трактует link href как ассет и читает корень. Полный URL билдер
+         пропускает; реальный домен подставляется при публичном релизе. -->
+    <link rel="canonical" href="https://example.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Конструктор ботов" />
+    <meta property="og:title" content="Конструктор ботов — визуальный редактор Telegram-сценариев" />
+    <meta property="og:description" content="Собирайте Telegram-ботов из блоков, проверяйте сценарии и публикуйте без кода." />
+    <meta property="og:url" content="https://example.com/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Конструктор ботов — визуальный редактор Telegram-сценариев" />
+    <meta name="twitter:description" content="Собирайте Telegram-ботов из блоков, проверяйте сценарии и публикуйте без кода." />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- API живёт на другом origin (VITE_API_BASE): раннее соединение убирает
+         DNS+TLS round-trip из первого запроса после логина. -->
+    <link rel="preconnect" href="https://your-worker-name.your-account.workers.dev" crossorigin />
+    <link rel="dns-prefetch" href="https://your-worker-name.your-account.workers.dev" />
+    <title>Конструктор ботов</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
