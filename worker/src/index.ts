@@ -335,13 +335,17 @@ function supportStaff(user: { role?: string } | null): boolean {
 // но браузер сам подставит его в запрос с чужой страницы).
 const PROD_ORIGINS = [
   'https://bots-constructor-web.pages.dev',
-  // Кастомные домены Pages-проекта добавляй сюда после того, как DNS
-  // и биндинги Pages реально работают.
+  // Кастомный домен Pages-проекта botlab.dpdns.org (зона аккаунта Ногтей,
+  // туда указывает DNS) — фронт прод-витрины. Без него в allowlist браузер
+  // блокирует ответы API (логин падает с «Не удалось подключиться»).
+  'https://botlab.dpdns.org',
 ];
 
 const ORIGIN_PATTERNS: RegExp[] = [
   // Превью-деплои Pages: <branch>.bots-constructor-web.pages.dev
   /^https:\/\/[a-z0-9-]+\.bots-constructor-web\.pages\.dev$/,
+  // Превью кастом-домена: <branch>.botlab.dpdns.org (preview-алиасы Pages).
+  /^https:\/\/[a-z0-9-]+\.botlab\.dpdns\.org$/,
   // Локальная разработка (vite dev + wrangler dev).
   /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
 ];
