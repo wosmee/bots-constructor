@@ -207,7 +207,7 @@ describe('simulate: один сценарий со всеми новыми бл�
     const { env } = makeEnv('sim-bot-1');
     const inputs = [
       '/start', // → ждём имя (pending input)
-      '<i>Илья</i>', // → message(parseMode HTML), setvar, poll (pending poll)
+      '<i>Иван</i>', // → message(parseMode HTML), setvar, poll (pending poll)
       'poll:0', // → forward, chat_action, wait (pending wait)
       'готово', // → channel_check (member по умолчанию), buttons (pending choice)
       'notmember:', // служебный переключатель заглушки
@@ -223,7 +223,7 @@ describe('simulate: один сценарий со всеми новыми бл�
     const lines = texts(r);
 
     // parseMode HTML: переменная интерполируется и экранируется
-    expect(lines).toContain('&lt;b&gt;&lt;i&gt;Илья&lt;/i&gt;&lt;/b&gt; &amp; привет');
+    expect(lines).toContain('&lt;b&gt;&lt;i&gt;Иван&lt;/i&gt;&lt;/b&gt; &amp; привет');
 
     // poll
     expect(lines).toContain('[опрос] Любишь тесты? (2 вариантов)');
@@ -287,7 +287,7 @@ describe('simulate: один сценарий со всеми новыми бл�
 
   it('остановка на poll даёт pending kind=poll с кнопками poll:N', async () => {
     const { env } = makeEnv('sim-bot-1');
-    const r = await simulate(env, 'sim-bot-1', megaScenario(), ['/start', 'Илья']);
+    const r = await simulate(env, 'sim-bot-1', megaScenario(), ['/start', 'Иван']);
     expect(r.pending?.kind).toBe('poll');
     expect(r.pending?.buttons).toEqual([
       { label: 'Да', value: 'poll:0' },
@@ -297,7 +297,7 @@ describe('simulate: один сценарий со всеми новыми бл�
 
   it('остановка на wait даёт pending kind=wait с авторским промптом', async () => {
     const { env } = makeEnv('sim-bot-1');
-    const r = await simulate(env, 'sim-bot-1', megaScenario(), ['/start', 'Илья', 'poll:0']);
+    const r = await simulate(env, 'sim-bot-1', megaScenario(), ['/start', 'Иван', 'poll:0']);
     expect(r.pending?.kind).toBe('wait');
     expect(r.pending?.prompt).toBe('Напиши что-нибудь');
   });

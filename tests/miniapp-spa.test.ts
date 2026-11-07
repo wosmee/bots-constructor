@@ -16,8 +16,8 @@ function runtimeScript(): string {
 
 const CTX: MiniContext = {
   userId: 42,
-  name: 'Илья',
-  username: 'ilya_dev',
+  name: 'Иван',
+  username: 'ivan_dev',
   tags: ['vip', 'tester'],
   vars: { city: 'Москва', balance: '100', note: '' },
 };
@@ -289,8 +289,8 @@ describe('SPA_HTML: фаза D — richtext, carousel, video, CSS, pay', () => {
 describe('miniCondLeft: ссылки на контекст', () => {
   it('user.id / user.name / user.username', () => {
     expect(miniCondLeft('user.id', CTX)).toBe('42');
-    expect(miniCondLeft('user.name', CTX)).toBe('Илья');
-    expect(miniCondLeft('user.username', CTX)).toBe('ilya_dev');
+    expect(miniCondLeft('user.name', CTX)).toBe('Иван');
+    expect(miniCondLeft('user.username', CTX)).toBe('ivan_dev');
   });
 
   it('tag:<имя> — факт наличия как 1/\'\'', () => {
@@ -306,8 +306,8 @@ describe('miniCondLeft: ссылки на контекст', () => {
 
 describe('evalMiniOp: все операторы ConditionOp', () => {
   it('== / != строковые и числовые', () => {
-    expect(evalMiniOp('Илья', '==', 'Илья')).toBe(true);
-    expect(evalMiniOp('Илья', '==', 'Иль я')).toBe(false);
+    expect(evalMiniOp('Иван', '==', 'Иван')).toBe(true);
+    expect(evalMiniOp('Иван', '==', 'Пет я')).toBe(false);
     expect(evalMiniOp('a', '!=', 'b')).toBe(true);
     // числа сравниваются числово: '42' == '42.0'
     expect(evalMiniOp('42', '==', '42.0')).toBe(true);
@@ -342,11 +342,11 @@ describe('evalMiniOp: все операторы ConditionOp', () => {
   });
 
   it('starts_with / ends_with (пустая правая часть = ложь)', () => {
-    expect(evalMiniOp('ilya_dev', 'starts_with', 'ilya')).toBe(true);
-    expect(evalMiniOp('ilya_dev', 'starts_with', 'dev')).toBe(false);
-    expect(evalMiniOp('ilya_dev', 'ends_with', 'dev')).toBe(true);
-    expect(evalMiniOp('ilya_dev', 'starts_with', '')).toBe(false);
-    expect(evalMiniOp('ilya_dev', 'ends_with', '')).toBe(false);
+    expect(evalMiniOp('ivan_dev', 'starts_with', 'ivan')).toBe(true);
+    expect(evalMiniOp('ivan_dev', 'starts_with', 'dev')).toBe(false);
+    expect(evalMiniOp('ivan_dev', 'ends_with', 'dev')).toBe(true);
+    expect(evalMiniOp('ivan_dev', 'starts_with', '')).toBe(false);
+    expect(evalMiniOp('ivan_dev', 'ends_with', '')).toBe(false);
   });
 
   it("empty / not_empty ('0' не пусто)", () => {
@@ -357,8 +357,8 @@ describe('evalMiniOp: все операторы ConditionOp', () => {
   });
 
   it('regex: совпадение и битый паттерн = ложь', () => {
-    expect(evalMiniOp('ilya_dev', 'regex', '^ilya_')).toBe(true);
-    expect(evalMiniOp('ilya_dev', 'regex', '^admin')).toBe(false);
+    expect(evalMiniOp('ivan_dev', 'regex', '^ivan_')).toBe(true);
+    expect(evalMiniOp('ivan_dev', 'regex', '^admin')).toBe(false);
     expect(evalMiniOp('x', 'regex', '([a-z')).toBe(false);
   });
 
@@ -374,10 +374,10 @@ describe('evalVisibleMini', () => {
   });
 
   it('user.*: ==, contains, starts_with', () => {
-    expect(evalVisibleMini(cond('user.name', '==', 'Илья'), CTX)).toBe(true);
-    expect(evalVisibleMini(cond('user.name', '!=', 'Илья'), CTX)).toBe(false);
+    expect(evalVisibleMini(cond('user.name', '==', 'Иван'), CTX)).toBe(true);
+    expect(evalVisibleMini(cond('user.name', '!=', 'Иван'), CTX)).toBe(false);
     expect(evalVisibleMini(cond('user.username', 'contains', 'dev'), CTX)).toBe(true);
-    expect(evalVisibleMini(cond('user.username', 'starts_with', 'ilya'), CTX)).toBe(true);
+    expect(evalVisibleMini(cond('user.username', 'starts_with', 'ivan'), CTX)).toBe(true);
     // id числовой: '42' == '42' и '42' > '7'
     expect(evalVisibleMini(cond('user.id', '==', '42'), CTX)).toBe(true);
     expect(evalVisibleMini(cond('user.id', '>', '7'), CTX)).toBe(true);

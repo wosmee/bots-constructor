@@ -106,7 +106,7 @@ describe('expandSubflows — ядро', () => {
         f2: {
           id: 'f2',
           type: 'condition',
-          params: { condVar: 'name', op: '==', condValue: 'Илья' },
+          params: { condVar: 'name', op: '==', condValue: 'Иван' },
           branches: { then: 'r1', else: 'r2' },
         },
         r1: { id: 'r1', type: 'subflow_return', params: {} },
@@ -450,7 +450,7 @@ describe('эквивалентность рантайма: expanded == hand-writ
       },
     };
     const { scenario: expanded } = expandSubflows(withSubflow, library);
-    const vars = { name: 'Илья', last_input: '/start' };
+    const vars = { name: 'Иван', last_input: '/start' };
     const update = { message: { chat: { id: 1 }, from: { id: 1 }, text: '/start' } };
     const r1 = await runEngine({ scenario: expanded, update, session: { currentBlock: null, vars: {} } });
     const r2 = await runEngine({ scenario: handwritten, update, session: { currentBlock: null, vars: {} } });

@@ -30,12 +30,12 @@ const PASSWORD = 'correct-horse-99';
 const PASS_HASH = await hashPassword(PASSWORD);
 
 const ACCOUNTS: Record<string, { id: string; login: string; pass_hash: string; created_at: number }> = {
-  ilya: { id: 'u1', login: 'ilya', pass_hash: PASS_HASH, created_at: 1700000000000 },
+  ivan: { id: 'u1', login: 'ivan', pass_hash: PASS_HASH, created_at: 1700000000000 },
 };
 
 const BOTS = [
   { id: 'bot-admin', owner_id: 'admin', name: 'Бот платформы', active: 0, created_at: 5, owner_login: null },
-  { id: 'bot-u1', owner_id: 'u1', name: 'Бот Ильи', active: 1, created_at: 6, owner_login: 'ilya' },
+  { id: 'bot-u1', owner_id: 'u1', name: 'Бот Ивана', active: 1, created_at: 6, owner_login: 'ivan' },
 ];
 
 type Recorded = { sql: string; args: unknown[] };
@@ -44,7 +44,7 @@ function makeEnv(overrides: Partial<{ ADMIN_KEY: string | undefined; ENVIRONMENT
   const recorded: Recorded[] = [];
   const kvStore = new Map<string, string>();
   // Действующая сессия аккаунта для DELETE /me и POST /password.
-  kvStore.set('sess:tok-user', JSON.stringify({ id: 'u1', login: 'ilya', exp: Date.now() + 60_000 }));
+  kvStore.set('sess:tok-user', JSON.stringify({ id: 'u1', login: 'ivan', exp: Date.now() + 60_000 }));
 
   const db = {
     prepare(sql: string) {
@@ -133,7 +133,7 @@ describe('POST /api/auth/login — различимые сообщения', () 
 
   it('известный логин + неверный пароль → 401 «Пароль не верный» (code wrong_password)', async () => {
     const { env } = makeEnv();
-    const res = await call(env, 'POST', '/api/auth/login', {}, { login: 'ilya', password: 'not-the-password' });
+    const res = await call(env, 'POST', '/api/auth/login', {}, { login: 'ivan', password: 'not-the-password' });
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: 'Пароль не верный', code: 'wrong_password' });
   });
@@ -142,21 +142,21 @@ describe('POST /api/auth/login — различимые сообщения', () 
     const { env, kvStore } = makeEnv();
     // Предварительно «набрутфорсим» оба бакета — успех обязан их очистить.
     kvStore.set('rl:login:unknown', '3');
-    kvStore.set('rl:acct:ilya', '3');
-    const res = await call(env, 'POST', '/api/auth/login', {}, { login: 'ilya', password: PASSWORD });
+    kvStore.set('rl:acct:ivan', '3');
+    const res = await call(env, 'POST', '/api/auth/login', {}, { login: 'ivan', password: PASSWORD });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { ok: true; token: string; user: { id: string; login: string } };
     expect(body.ok).toBe(true);
     expect(body.token).toMatch(/^[0-9a-f]{64}$/);
-    expect(body.user).toEqual({ id: 'u1', login: 'ilya' });
+    expect(body.user).toEqual({ id: 'u1', login: 'ivan' });
     expect(kvStore.has('rl:login:unknown')).toBe(false);
-    expect(kvStore.has('rl:acct:ilya')).toBe(false);
+    expect(kvStore.has('rl:acct:ivan')).toBe(false);
   });
 
   it('10 накопленных неудач → 429 (прежнее поведение)', async () => {
     const { env, kvStore } = makeEnv();
     kvStore.set('rl:login:unknown', '10');
-    const res = await call(env, 'POST', '/api/auth/login', {}, { login: 'ilya', password: 'wrong' });
+    const res = await call(env, 'POST', '/api/auth/login', {}, { login: 'ivan', password: 'wrong' });
     expect(res.status).toBe(429);
     const body = (await res.json()) as { error: string };
     expect(body.error).toBe('слишком много неудачных попыток. Подождите 10 минут');
@@ -173,7 +173,7 @@ describe('POST /api/auth/login — различимые сообщения', () 
 describe('POST /api/auth/register — без изменений', () => {
   it('занятый логин → 409 «Логин занят»', async () => {
     const { env } = makeEnv();
-    const res = await call(env, 'POST', '/api/auth/register', {}, { login: 'ilya', password: 'secret123' });
+    const res = await call(env, 'POST', '/api/auth/register', {}, { login: 'ivan', password: 'secret123' });
     expect(res.status).toBe(409);
     expect((await res.json()).error).toBe('Логин занят');
   });

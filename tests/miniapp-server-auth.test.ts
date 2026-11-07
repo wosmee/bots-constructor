@@ -75,13 +75,13 @@ function makeEnv(publishedApp: unknown = APP, accessRule: unknown = { kind: 'all
     logs: [] as string[],
   };
   const miniApps: Row[] = [{
-    id: 'mini-1', bot_id: BOT_ID, owner_id: 'ilya', name: 'AUDIT-S2', slug: 'shop',
+    id: 'mini-1', bot_id: BOT_ID, owner_id: 'ivan', name: 'AUDIT-S2', slug: 'shop',
     access_rule_json: JSON.stringify(accessRule),
     draft_json: JSON.stringify(publishedApp),
     published_json: JSON.stringify(publishedApp),
     created_at: 1, updated_at: 1,
   }];
-  const bots: Row[] = [{ id: BOT_ID, owner_id: 'ilya', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 }];
+  const bots: Row[] = [{ id: BOT_ID, owner_id: 'ivan', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 }];
   const collections: Row[] = [
     { id: 'col-products', bot_id: BOT_ID, name: 'products', fields_json: '["title","price"]', created_at: 1 },
     { id: 'col-orders', bot_id: BOT_ID, name: 'orders', fields_json: '["phone","note"]', created_at: 2 },
@@ -155,7 +155,7 @@ function makeEnv(publishedApp: unknown = APP, accessRule: unknown = { kind: 'all
     async batch(stmts: unknown[]) { for (const st of stmts) await (st as any).run?.(); return []; },
   };
   const kvStore = new Map<string, string>();
-  kvStore.set('sess:tok-owner', JSON.stringify({ id: 'ilya', login: 'ilya', exp: Date.now() + 60_000 }));
+  kvStore.set('sess:tok-owner', JSON.stringify({ id: 'ivan', login: 'ivan', exp: Date.now() + 60_000 }));
   const kv = {
     async get(k: string) { return kvStore.get(k) ?? null; },
     async put(k: string, v: string) { kvStore.set(k, v); },

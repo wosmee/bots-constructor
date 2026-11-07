@@ -108,8 +108,8 @@ describe('runEngine: forward', () => {
       f: { id: 'f', type: 'forward', params: { forwardMode: 'text', forwardText: 'привет {{name}}', toChatId: '@chan' }, branches: { ok: 'e' } },
       e: { id: 'e', type: 'end', params: {} },
     });
-    const res = await run(scn, msgUpdate('привет'), { currentBlock: null, vars: { name: 'Илья' } });
-    expect(texts(res.outs)).toContain('привет Илья');
+    const res = await run(scn, msgUpdate('привет'), { currentBlock: null, vars: { name: 'Иван' } });
+    expect(texts(res.outs)).toContain('привет Иван');
   });
 
   it('нет toChatId и нет from — ветка failed', async () => {
@@ -278,7 +278,7 @@ describe('runEngine: segment_broadcast', () => {
 
 describe('runEngine: user_stats', () => {
   const profile = {
-    name: 'Илья', username: '@ilya', id: 2, tags: ['vip', 'pro'],
+    name: 'Иван', username: '@ivan', id: 2, tags: ['vip', 'pro'],
     subscription: true, paidTotal: 15000, refCount: 3, firstSeen: 1000,
   };
 
@@ -290,11 +290,11 @@ describe('runEngine: user_stats', () => {
     });
     const ops: UserOps = { async profile() { return profile; } };
     const res = await run(scn, msgUpdate('/start'), { currentBlock: null, vars: {} }, { users: ops });
-    expect(res.vars['user.name']).toBe('Илья');
+    expect(res.vars['user.name']).toBe('Иван');
     expect(res.vars['user.tags']).toBe('vip, pro');
     expect(res.vars['user.subscription']).toBe(1);
     expect(res.vars['user.paid_total']).toBe(15000);
-    expect(texts(res.outs)).toContain('Илья | vip, pro | 15000');
+    expect(texts(res.outs)).toContain('Иван | vip, pro | 15000');
   });
 
   it('profile бросает — идём по next без переменных, шаблон с пустыми', async () => {
@@ -317,7 +317,7 @@ describe('runEngine: user_stats', () => {
     });
     const ops: UserOps = { async profile() { return profile; } };
     const res = await run(scn, msgUpdate('/start'), { currentBlock: null, vars: {} }, { users: ops });
-    expect(res.vars['client.name']).toBe('Илья');
+    expect(res.vars['client.name']).toBe('Иван');
     expect(res.vars['user.name']).toBeUndefined();
   });
 });
@@ -807,10 +807,10 @@ describe('runEngine: добор контрактов новых блоков', (
     let seg: any = null;
     let payload: any = null;
     const ops: BroadcastOps = { async enqueue(s, p) { seg = s; payload = p; return 2; } };
-    await run(scn, msgUpdate('/start'), { currentBlock: null, vars: { name: 'Илья', wanted: 'pro' } }, { broadcast: ops });
+    await run(scn, msgUpdate('/start'), { currentBlock: null, vars: { name: 'Иван', wanted: 'pro' } }, { broadcast: ops });
     expect(seg.tag).toBe('vip');
     expect(seg.conditions).toEqual([{ source: 'var', var: 'plan', op: '==', value: 'pro' }]);
-    expect(payload).toEqual({ text: 'текст Илья', mediaUrl: 'https://x.jpg', parseMode: 'HTML', chunkSize: 50, delayMs: 100, dailyCap: 10 });
+    expect(payload).toEqual({ text: 'текст Иван', mediaUrl: 'https://x.jpg', parseMode: 'HTML', chunkSize: 50, delayMs: 100, dailyCap: 10 });
   });
 
   it('user_stats: полный набор user.* включая firstSeen null и subscription false', async () => {

@@ -57,7 +57,7 @@ async function makeInitData(
   return `${qs}&hash=${hash}`;
 }
 
-const USER_JSON = JSON.stringify({ id: 424242, first_name: 'Илья', last_name: 'В', username: 'ilya_v' });
+const USER_JSON = JSON.stringify({ id: 424242, first_name: 'Иван', last_name: 'В', username: 'ivan_v' });
 
 function freshAuthDate(): string {
   return String(Math.floor(Date.now() / 1000));
@@ -71,7 +71,7 @@ describe('parseAndValidateInitData', () => {
       auth_date: freshAuthDate(),
     });
     const res = await parseAndValidateInitData(initData, BOT_TOKEN);
-    expect(res).toEqual({ userId: 424242, name: 'Илья В', username: 'ilya_v' });
+    expect(res).toEqual({ userId: 424242, name: 'Иван В', username: 'ivan_v' });
   });
 
   it('без username — null, имя из first_name', async () => {
@@ -129,8 +129,8 @@ describe('parseAndValidateInitData', () => {
 const TAG_ROWS = [{ tag: 'vip' }, { tag: 'рассылка' }];
 const CLIENT_ROW = {
   user_id: 424242,
-  first_name: 'Илья',
-  username: 'ilya_v',
+  first_name: 'Иван',
+  username: 'ivan_v',
   first_seen: 1,
   updated_at: 2,
   current_block: null,
@@ -160,11 +160,11 @@ function makeDb() {
 
 describe('buildContext', () => {
   it('теги и переменные берутся из БД, значения приводятся к строке', async () => {
-    const ctx = await buildContext(makeDb(), 'bot-1', 424242, 'Илья В', 'ilya_v');
+    const ctx = await buildContext(makeDb(), 'bot-1', 424242, 'Иван В', 'ivan_v');
     expect(ctx).toEqual({
       userId: 424242,
-      name: 'Илья В',
-      username: 'ilya_v',
+      name: 'Иван В',
+      username: 'ivan_v',
       tags: ['vip', 'рассылка'],
       vars: { город: 'Москва', баланс: '100', пусто: '' },
     });
@@ -172,8 +172,8 @@ describe('buildContext', () => {
 
   it('пустое имя из initData — фолбэк на профиль сессии', async () => {
     const ctx = await buildContext(makeDb(), 'bot-1', 424242, '', null);
-    expect(ctx.name).toBe('Илья');
-    expect(ctx.username).toBe('ilya_v');
+    expect(ctx.name).toBe('Иван');
+    expect(ctx.username).toBe('ivan_v');
   });
 });
 
@@ -181,8 +181,8 @@ describe('buildContext', () => {
 
 const CTX: MiniContext = {
   userId: 424242,
-  name: 'Илья',
-  username: 'ilya_v',
+  name: 'Иван',
+  username: 'ivan_v',
   tags: ['vip', 'рассылка'],
   vars: { город: 'Москва', заказов: '12' },
 };
@@ -252,8 +252,8 @@ describe('evalVisible', () => {
 
   it('user.* источники', () => {
     expect(evalVisible(when('user.id', '==', '424242'), CTX)).toBe(true);
-    expect(evalVisible(when('user.name', '==', 'Илья'), CTX)).toBe(true);
-    expect(evalVisible(when('user.username', 'starts_with', 'ilya'), CTX)).toBe(true);
+    expect(evalVisible(when('user.name', '==', 'Иван'), CTX)).toBe(true);
+    expect(evalVisible(when('user.username', 'starts_with', 'ivan'), CTX)).toBe(true);
     // username === null резолвится в '' — пустой, а не «null».
     const noUser = { ...CTX, username: null };
     expect(evalVisible(when('user.username', 'empty', ''), noUser)).toBe(true);
@@ -305,7 +305,7 @@ describe('filterVisibleElements', () => {
 describe('interpolate', () => {
   it('подставляет {user.name}, {user.id}, {user.username}', () => {
     expect(interpolate('Привет, {user.name}! Твой id: {user.id}, ник: @{user.username}', CTX)).toBe(
-      'Привет, Илья! Твой id: 424242, ник: @ilya_v'
+      'Привет, Иван! Твой id: 424242, ник: @ivan_v'
     );
   });
 

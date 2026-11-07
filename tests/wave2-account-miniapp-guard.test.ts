@@ -23,7 +23,7 @@ type Row = Record<string, any>;
 // ---------------- F-017 ----------------
 
 function makeAccountEnv(opts: { tgFails?: boolean; badToken?: boolean } = {}) {
-  const accounts: Row[] = [{ id: 'u1', login: 'ilya', pass_hash: PASS_HASH, created_at: 1 }];
+  const accounts: Row[] = [{ id: 'u1', login: 'ivan', pass_hash: PASS_HASH, created_at: 1 }];
   const bots: Row[] = [
     { id: 'bot-a', owner_id: 'u1', name: 'A', token_enc: opts.badToken ? 'corrupt' : TOKEN_ENC, webhook_secret: 'sa', active: 1, created_at: 1 },
     { id: 'bot-b', owner_id: 'u1', name: 'B', token_enc: TOKEN_ENC, webhook_secret: 'sb', active: 1, created_at: 2 },
@@ -59,7 +59,7 @@ function makeAccountEnv(opts: { tgFails?: boolean; badToken?: boolean } = {}) {
     },
   };
   const kvStore = new Map<string, string>();
-  kvStore.set('sess:tok-user', JSON.stringify({ id: 'u1', login: 'ilya', exp: Date.now() + 60_000 }));
+  kvStore.set('sess:tok-user', JSON.stringify({ id: 'u1', login: 'ivan', exp: Date.now() + 60_000 }));
   kvStore.set('bot-a', 'sa');
   kvStore.set('bot-b', 'sb');
   kvStore.set('sc:bot-a', '{"flow_json":"{}"}');
@@ -167,7 +167,7 @@ describe('F-017: DELETE /api/auth/me снимает вебхуки и чисти
 
 function makeMiniEnv() {
   const miniApps: Row[] = [];
-  const bots: Row[] = [{ id: 'bot-m', owner_id: 'ilya', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 }];
+  const bots: Row[] = [{ id: 'bot-m', owner_id: 'ivan', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 }];
   const db = {
     prepare(sql: string) {
       const s = sql.replace(/\s+/g, ' ');
@@ -205,7 +205,7 @@ function makeMiniEnv() {
     async batch(stmts: Array<{ run?: () => Promise<unknown> }> = []) { for (const x of stmts) await x?.run?.(); return []; },
   };
   const kvStore = new Map<string, string>();
-  kvStore.set('sess:tok-owner', JSON.stringify({ id: 'ilya', login: 'ilya', exp: Date.now() + 60_000 }));
+  kvStore.set('sess:tok-owner', JSON.stringify({ id: 'ivan', login: 'ivan', exp: Date.now() + 60_000 }));
   const env = { DB: db, KV: { get: async (k: string) => kvStore.get(k) ?? null, put: async () => {}, delete: async () => {} }, ENCRYPTION_KEY: ENC_KEY, ADMIN_KEY, ENVIRONMENT: 'production' } as any;
   return { env, miniApps };
 }

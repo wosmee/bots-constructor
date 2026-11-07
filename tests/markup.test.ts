@@ -65,12 +65,12 @@ describe('renderMarkup: подстановка и экранирование', (
 
   it('текст без подстановок возвращается как есть', () => {
     expect(renderMarkup('нет подстановок a&<>', {}, 'none')).toBe('нет подстановок a&<>');
-    expect(renderMarkup('привет, {{name}}!', { name: 'Илья' }, 'none')).toBe('привет, Илья!');
+    expect(renderMarkup('привет, {{name}}!', { name: 'Иван' }, 'none')).toBe('привет, Иван!');
   });
 
   it('имена переменных с точкой подставляются', () => {
-    expect(renderMarkup('{{user.name}}', { 'user.name': 'Илья' }, 'HTML')).toBe('Илья');
-    expect(renderMarkup('{{user.name}}', { 'user.name': 'Илья' }, 'none')).toBe('Илья');
+    expect(renderMarkup('{{user.name}}', { 'user.name': 'Иван' }, 'HTML')).toBe('Иван');
+    expect(renderMarkup('{{user.name}}', { 'user.name': 'Иван' }, 'none')).toBe('Иван');
   });
 });
 
@@ -78,11 +78,11 @@ describe("renderMarkup: 'none'/undefined совместимы с interpolate()",
   // Старые сценарии не знают про parseMode: для них поведение обязано совпасть
   // с прежней функцией interpolate() до символа.
   const cases: [string, Record<string, unknown>][] = [
-    ['привет, {{name}}!', { name: 'Илья' }],
+    ['привет, {{name}}!', { name: 'Иван' }],
     ['{{a}} & {{b}} <tag>', { a: '<', b: '&' }],
     ['без подстановок', {}],
     ['{{miss}} x {{y}}', { y: '2' }],
-    ['{{user.name}} и {{count}}', { 'user.name': 'Илья', count: 7 }],
+    ['{{user.name}} и {{count}}', { 'user.name': 'Иван', count: 7 }],
   ];
 
   it("режим 'none' равен interpolate()", () => {

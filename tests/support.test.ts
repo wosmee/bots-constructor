@@ -67,7 +67,7 @@ function ticket(overrides: Partial<SupportTicketRow> = {}): SupportTicketRow {
   return {
     id: `t_${now}`,
     author_user_id: 'u1',
-    author_login: 'ilya',
+    author_login: 'ivan',
     bot_id: null,
     kind: 'question',
     subject: 'Тест',
@@ -86,7 +86,7 @@ function message(ticketId: string): SupportMessageRow {
     ticket_id: ticketId,
     author_role: 'user',
     author_user_id: 'u1',
-    author_login: 'ilya',
+    author_login: 'ivan',
     body: 'текст',
     created_at: Date.now(),
   };

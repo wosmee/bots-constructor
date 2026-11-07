@@ -94,15 +94,15 @@ function makeSqlDb(tables: Record<string, Row[]> = {}) {
 describe('insertAccount + getAccountByLogin (round-trip)', () => {
   it('записанный аккаунт читается обратно по логину', async () => {
     const db = makeSqlDb();
-    const acc: AccountRow = { id: 'u1', login: 'ilya', pass_hash: 'pbkdf2$100000$c2FsdA==$aGFzaA==', created_at: 1700000000000 };
+    const acc: AccountRow = { id: 'u1', login: 'ivan', pass_hash: 'pbkdf2$100000$c2FsdA==$aGFzaA==', created_at: 1700000000000 };
     await insertAccount(db as any, acc);
-    const read = await getAccountByLogin(db as any, 'ilya');
+    const read = await getAccountByLogin(db as any, 'ivan');
     expect(read).toEqual(acc);
   });
 
   it('чужой логин → null', async () => {
     const db = makeSqlDb();
-    await insertAccount(db as any, { id: 'u1', login: 'ilya', pass_hash: 'h', created_at: 1 });
+    await insertAccount(db as any, { id: 'u1', login: 'ivan', pass_hash: 'h', created_at: 1 });
     await expect(getAccountByLogin(db as any, 'someone-else')).resolves.toBeNull();
   });
 
@@ -120,7 +120,7 @@ describe('createSupportTicket', () => {
     return {
       id: 't1',
       author_user_id: 'u1',
-      author_login: 'ilya',
+      author_login: 'ivan',
       bot_id: null,
       kind: 'bug',
       subject: 'Не работает',
@@ -139,7 +139,7 @@ describe('createSupportTicket', () => {
       ticket_id: ticketId,
       author_role: 'user',
       author_user_id: 'u1',
-      author_login: 'ilya',
+      author_login: 'ivan',
       body: 'подробности',
       created_at: 1000,
     };
@@ -153,8 +153,8 @@ describe('createSupportTicket', () => {
     const msgInsert = db.__recorded.find((r) => r.sql.includes('INSERT INTO support_messages'));
     expect(ticketInsert).toBeTruthy();
     expect(msgInsert).toBeTruthy();
-    expect(ticketInsert!.args).toEqual(['t1', 'u1', 'ilya', null, 'bug', 'Не работает', 'new', null, 1000, 1000, 1000]);
-    expect(msgInsert!.args).toEqual(['m1', 't1', 'user', 'u1', 'ilya', 'подробности', 1000]);
+    expect(ticketInsert!.args).toEqual(['t1', 'u1', 'ivan', null, 'bug', 'Не работает', 'new', null, 1000, 1000, 1000]);
+    expect(msgInsert!.args).toEqual(['m1', 't1', 'user', 'u1', 'ivan', 'подробности', 1000]);
   });
 
   it('номер выдаётся подзапросом MAX+1 внутри INSERT', async () => {

@@ -7,7 +7,7 @@
 /*
   # connect-src содержит origin воркера API (VITE_API_BASE) и Telegram
   # (аватары в каталоге). Обнови при смене адреса API.
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.telegram.org; font-src 'self' data:; connect-src 'self' https://bots-constructor.vinogradovilya4060.workers.dev https://api.telegram.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.telegram.org; font-src 'self' data:; connect-src 'self' https://api.botlab.dpdns.org https://api.telegram.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Strict-Transport-Security: max-age=31536000; includeSubDomains

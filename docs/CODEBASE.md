@@ -545,7 +545,7 @@ CSS/атрибуты пользователя санитизируются (`sha
 - Регистрация/логин: `login`+`password` → `PBKDF2-SHA256` (100 000 итераций — потолок
   WebCrypto в Workers), сессия в KV (`sess:<token>`, 30 дней), Bearer-токен в
   `sessionStorage`. У пользователя видны только свои боты.
-- Админ платформы: `ADMIN_KEY` → `x-admin-key`. **Ключ только у Ильи, в файлы не пишу.**
+- Админ платформы: `ADMIN_KEY` → `x-admin-key`. **Ключ только у владельца, в файлы не пишу.**
 - `GET /api/me` и `GET /me` → `{user, role}`.
 - CORS — белый список (`PROD_ORIGINS` + regex-паттерны preview-деплоев/localhost
   + `CORS_ORIGINS` из env), не `*`; суффиксная атака не проходит (regex с якорями).

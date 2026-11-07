@@ -82,7 +82,7 @@ function makeEnv(state: Partial<State> = {}) {
     },
   };
   const kvStore = new Map<string, string>();
-  kvStore.set('sess:tok-user', JSON.stringify({ id: OWNER, login: 'ilya', exp: Date.now() + 60_000 }));
+  kvStore.set('sess:tok-user', JSON.stringify({ id: OWNER, login: 'ivan', exp: Date.now() + 60_000 }));
   const kvPuts: Array<{ key: string; opts?: any }> = [];
   const kv = {
     async get(k: string) { return kvStore.get(k) ?? null; },
@@ -173,7 +173,7 @@ describe('F-015: оптимистичная блокировка версии с
       async batch(stmts: Array<{ run?: () => Promise<unknown> }> = []) { for (const x of stmts) await x?.run?.(); return []; },
     };
     const kvStore = new Map<string, string>();
-    kvStore.set('sess:tok-user', JSON.stringify({ id: OWNER, login: 'ilya', exp: Date.now() + 60_000 }));
+    kvStore.set('sess:tok-user', JSON.stringify({ id: OWNER, login: 'ivan', exp: Date.now() + 60_000 }));
     const env = {
       DB: db,
       KV: { get: async (k: string) => kvStore.get(k) ?? null, put: async () => {}, delete: async () => {} },

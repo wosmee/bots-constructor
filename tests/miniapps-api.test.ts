@@ -18,7 +18,7 @@ function makeEnv() {
   const miniApps: Row[] = [];
   const versions: Row[] = [];
   const bots: Row[] = [
-    { id: BOT_ID, owner_id: 'ilya', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 },
+    { id: BOT_ID, owner_id: 'ivan', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 },
     { id: 'admin-mini-bot', owner_id: 'admin', name: 'admin bot', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'adminbot', has_referral: 0 },
   ];
   const db = {

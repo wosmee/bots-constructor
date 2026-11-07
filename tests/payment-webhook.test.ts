@@ -137,7 +137,7 @@ function defaultState(overrides: Partial<PayDbState> = {}): PayDbState {
     orderStatus: 'created',
     orderAmount: 150000,
     payloadJson: '{}',
-    sessionVarsJson: '{"who":"Илья"}',
+    sessionVarsJson: '{"who":"Иван"}',
     scenarioFlowJson: null,
     botPlatform: 'telegram',
     ...overrides,
@@ -203,7 +203,7 @@ describe('POST /p/:token', () => {
     const varsArg = JSON.parse(String(writes[0].args[3]));
     expect(varsArg['pay.order']).toBe(ORDER_EXT);
     expect(varsArg['payment']).toEqual({ status: 'paid', amount: 150000, currency: 'RUB', order: ORDER_EXT });
-    expect(varsArg['who']).toBe('Илья'); // прежние переменные не потеряны
+    expect(varsArg['who']).toBe('Иван'); // прежние переменные не потеряны
     // залогировано событие оплаты
     expect(logEventsOf(recorded)).toContain(`payments.webhook.paid.150000`);
   });

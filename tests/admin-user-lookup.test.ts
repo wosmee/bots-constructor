@@ -20,7 +20,7 @@ const ENC_KEY = btoa('0123456789abcdef0123456789abcdef');
 
 // Аккаунты: u1 — обычный, m1 — модератор, a1 — админ, t1 — цель поиска.
 const ACCOUNTS: Record<string, { id: string; login: string; role: string; created_at: number }> = {
-  ilya: { id: 'u1', login: 'ilya', role: 'user', created_at: 1700000000000 },
+  ivan: { id: 'u1', login: 'ivan', role: 'user', created_at: 1700000000000 },
   mod: { id: 'm1', login: 'mod', role: 'moderator', created_at: 1700000001000 },
   adm: { id: 'a1', login: 'adm', role: 'admin', created_at: 1700000002000 },
   target: { id: 't1', login: 'target', role: 'user', created_at: 1700000003000 },
@@ -50,7 +50,7 @@ function makeEnv() {
   const recorded: Recorded[] = [];
 
   const sessions: Record<string, { id: string; login: string }> = {
-    'sess:tok-user': { id: 'u1', login: 'ilya' },
+    'sess:tok-user': { id: 'u1', login: 'ivan' },
     'sess:tok-mod': { id: 'm1', login: 'mod' },
     'sess:tok-admin': { id: 'a1', login: 'adm' },
   };

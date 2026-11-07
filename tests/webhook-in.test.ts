@@ -16,7 +16,7 @@ import { WH_PREFIX } from '../shared/types';
 
 describe('extractWebhookVars', () => {
   it('без fields: тело-объект целиком в wh.body как JSON', () => {
-    const body = { name: 'Илья', age: 30, tags: ['a', 'b'] };
+    const body = { name: 'Иван', age: 30, tags: ['a', 'b'] };
     expect(extractWebhookVars(undefined, body)).toEqual({ 'wh.body': JSON.stringify(body) });
     expect(extractWebhookVars([], body)).toEqual({ 'wh.body': JSON.stringify(body) });
   });
@@ -33,10 +33,10 @@ describe('extractWebhookVars', () => {
   });
 
   it('с fields: скаляр, объект, отсутствующее поле', () => {
-    const body = { name: 'Илья', meta: { city: 'M' }, list: [1, 2], flag: false, zero: 0 };
+    const body = { name: 'Иван', meta: { city: 'M' }, list: [1, 2], flag: false, zero: 0 };
     const out = extractWebhookVars(['name', 'meta', 'list', 'flag', 'zero', 'absent'], body);
     expect(out).toEqual({
-      [`${WH_PREFIX}name`]: 'Илья',
+      [`${WH_PREFIX}name`]: 'Иван',
       [`${WH_PREFIX}meta`]: '{"city":"M"}',
       [`${WH_PREFIX}list`]: '[1,2]',
       [`${WH_PREFIX}flag`]: 'false',

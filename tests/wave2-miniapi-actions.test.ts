@@ -68,13 +68,13 @@ function makeEnv(app: unknown, opts: { sessionVars?: Record<string, unknown>; tg
   };
   const sessionVars = opts.sessionVars ?? {};
   const miniApps: Row[] = [{
-    id: 'mini-1', bot_id: BOT_ID, owner_id: 'ilya', name: 'W2', slug: 'shop',
+    id: 'mini-1', bot_id: BOT_ID, owner_id: 'ivan', name: 'W2', slug: 'shop',
     access_rule_json: JSON.stringify({ kind: 'all' }),
     draft_json: JSON.stringify(app),
     published_json: JSON.stringify(app),
     created_at: 1, updated_at: 1,
   }];
-  const bots: Row[] = [{ id: BOT_ID, owner_id: 'ilya', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 }];
+  const bots: Row[] = [{ id: BOT_ID, owner_id: 'ivan', name: 'test', token_enc: TOKEN_ENC, webhook_secret: 'ws', bot_username: 'testbot', has_referral: 0 }];
   const sessions: Row[] = [{
     bot_id: BOT_ID, user_id: USER_ID, current_block: null,
     vars_json: JSON.stringify(sessionVars), updated_at: 1, first_name: null, username: null,

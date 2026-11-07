@@ -38,8 +38,8 @@ describe('runEngine', () => {
     const first = await run(sc, msg('/start'));
     expect(first.currentBlock).toBe('i');
 
-    const second = await run(sc, msg('Илья'), { currentBlock: 'i', vars: first.vars });
-    expect(second.outs.some((o) => o.payload.text === 'привет, Илья')).toBe(true);
+    const second = await run(sc, msg('Иван'), { currentBlock: 'i', vars: first.vars });
+    expect(second.outs.some((o) => o.payload.text === 'привет, Иван')).toBe(true);
   });
 
   it('кнопка уводит по своей ветке', async () => {
@@ -327,7 +327,7 @@ describe('runEngine: блок «Данные»', () => {
     const ops = fakeOps([
       { name: 'Анна', city: 'Москва' },
       { name: 'Пётр', city: 'Москва' },
-      { name: 'Илья', city: 'Казань' },
+      { name: 'Иван', city: 'Казань' },
     ]);
     const sc = scenarioOf({
       s: { id: 's', type: 'start', params: {}, next: 'd' },
@@ -340,7 +340,7 @@ describe('runEngine: блок «Данные»', () => {
       m: { id: 'm', type: 'message', params: { text: 'удалено {{gone_count}}' } },
     });
     const r = await run(sc, msg('/start'), { currentBlock: null, vars: {} }, ops);
-    expect(ops.store).toEqual([{ name: 'Илья', city: 'Казань' }]);
+    expect(ops.store).toEqual([{ name: 'Иван', city: 'Казань' }]);
     expect(r.outs.some((o) => o.payload.text === 'удалено 2')).toBe(true);
   });
 });

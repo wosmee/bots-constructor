@@ -10,7 +10,7 @@
 ![Инспектор блока «Ввод»](docs/media/inspector-input.png)
 
 **Стек:** Cloudflare Workers (Hono) · D1 · KV · React + Vite + @xyflow/react ·
-vitest (103 файла, 1594 теста) · TypeScript без `any`-стиля в новых модулях.
+vitest (103 файла, 1599 тестов) · TypeScript без `any`-стиля в новых модулях.
 
 > Проект личный, статус — «работает в проде у одного владельца». Мини-аппы
 > (Telegram WebApp) в разработке и скрыты за флагом `MINI_APPS_ENABLED`.

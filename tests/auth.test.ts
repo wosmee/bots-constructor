@@ -103,7 +103,7 @@ describe('verifyPassword', () => {
 describe('createSession', () => {
   it('возвращает токен и кладёт сессию в KV с TTL 30 дней', async () => {
     const kv = mockKV();
-    const user: SessionUser = { id: 'u1', login: 'ilya' };
+    const user: SessionUser = { id: 'u1', login: 'ivan' };
     const before = Date.now();
     const token = await createSession(kv as any, user);
 
@@ -114,7 +114,7 @@ describe('createSession', () => {
     expect(raw).toBeTruthy();
     const data = JSON.parse(raw!);
     expect(data.id).toBe('u1');
-    expect(data.login).toBe('ilya');
+    expect(data.login).toBe('ivan');
     // SESSION_TTL_SECONDS = 2592000 (30 дней): проверяем через exp и expirationTtl.
     expect(data.exp).toBeGreaterThanOrEqual(before + THIRTY_DAYS_SECONDS * 1000);
     expect(data.exp).toBeLessThanOrEqual(Date.now() + THIRTY_DAYS_SECONDS * 1000);
@@ -125,8 +125,8 @@ describe('createSession', () => {
 
   it('две сессии подряд дают разные токены', async () => {
     const kv = mockKV();
-    const a = await createSession(kv as any, { id: 'u1', login: 'ilya' });
-    const b = await createSession(kv as any, { id: 'u1', login: 'ilya' });
+    const a = await createSession(kv as any, { id: 'u1', login: 'ivan' });
+    const b = await createSession(kv as any, { id: 'u1', login: 'ivan' });
     expect(a).not.toBe(b);
   });
 });

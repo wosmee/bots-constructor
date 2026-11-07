@@ -335,8 +335,8 @@ function supportStaff(user: { role?: string } | null): boolean {
 // но браузер сам подставит его в запрос с чужой страницы).
 const PROD_ORIGINS = [
   'https://bots-constructor-web.pages.dev',
-  // Кастомный домен Pages-проекта botlab.dpdns.org (зона аккаунта Ногтей,
-  // туда указывает DNS) — фронт прод-витрины. Без него в allowlist браузер
+  // Кастомный домен Pages-проекта botlab.dpdns.org (DNS указывает туда) —
+  // фронт прод-витрины. Без него в allowlist браузер
   // блокирует ответы API (логин падает с «Не удалось подключиться»).
   'https://botlab.dpdns.org',
 ];
